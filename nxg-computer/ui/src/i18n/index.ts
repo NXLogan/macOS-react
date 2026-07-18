@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE, Dict, LocaleCode, localeTag, normalizeLocale, isRtl } from "./types";
+import { DEFAULT_LOCALE, Dict, LocaleCode, normalizeLocale } from "./types";
 import fr from "./locales/fr";
 import en from "./locales/en";
 import ar from "./locales/ar";

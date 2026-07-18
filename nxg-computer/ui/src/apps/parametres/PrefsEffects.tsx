@@ -51,7 +51,7 @@ export default function PrefsEffects() {
     root.lang = locale;
     root.dir = isRtl(locale) ? "rtl" : "ltr";
     root.classList.toggle("nxg-rtl", isRtl(locale));
-  }, [prefs?.language]);
+  }, [prefs?.language]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!prefs) return;

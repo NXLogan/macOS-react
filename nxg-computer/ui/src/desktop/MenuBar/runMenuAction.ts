@@ -11,7 +11,6 @@ import { SPECIAL } from "../../apps/fichiers/fs";
 import { createFolder, emptyTrash } from "../../apps/fichiers/fsApi";
 import { fetchNui, isEnvBrowser } from "../../lib/nui/fetchNui";
 import { tFor } from "../../i18n/useT";
-import { appName } from "../../i18n";
 
 type Dispatch = (action: { type: string; payload?: unknown; index?: number; folderId?: string }) => void;
 

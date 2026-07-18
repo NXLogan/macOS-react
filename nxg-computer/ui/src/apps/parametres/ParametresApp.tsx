@@ -273,7 +273,7 @@ export default function ParametresApp() {
     const q = search.trim().toLowerCase();
     if (!q) return SECTIONS;
     return SECTIONS.filter((s) => s.label.toLowerCase().includes(q));
-  }, [search]);
+  }, [search, SECTIONS]);
 
   const [storageTick, setStorageTick] = useState(0);
   useEffect(() => {
