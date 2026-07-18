@@ -30,6 +30,8 @@ export default function MenuBar() {
       ? "Paramètres"
       : front === "calculator"
       ? "Calculatrice"
+      : front === "corbeille"
+      ? "Corbeille"
       : "Fichiers";
 
   useEffect(() => {

@@ -1,5 +1,12 @@
 export type FsKind = "folder" | "file";
 
+/** Desktop app shortcut parked in the Corbeille. */
+export type TrashedDesktopApp = {
+  id: string;
+  name: string;
+  icon: string;
+};
+
 export type FsNode = {
   id: string;
   name: string;
@@ -8,6 +15,10 @@ export type FsNode = {
   createdAt: number;
   size?: number;
   ext?: string;
+  /** Parent folder before move to Corbeille — used by restore. */
+  trashedFrom?: string | null;
+  /** When set, this trash entry is a desktop app shortcut (not a real file). */
+  desktopApp?: TrashedDesktopApp;
 };
 
 export type SidebarId =
@@ -211,6 +222,7 @@ export function formatDate(ts: number) {
 }
 
 export function fileIconLabel(node: FsNode) {
+  if (node.desktopApp || node.ext === "app") return "📦";
   if (node.kind === "folder") return "📁";
   switch (node.ext) {
     case "pdf":

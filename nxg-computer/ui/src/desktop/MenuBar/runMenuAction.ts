@@ -76,7 +76,7 @@ export async function runMenuAction(
 ) {
   const front = frontAppId(state);
   const fichiersOpen = Boolean(state.openApps?.fichiers);
-  const APP_IDS = ["fichiers", "parametres", "calculator"] as const;
+  const APP_IDS = ["fichiers", "parametres", "calculator", "corbeille"] as const;
 
   switch (id) {
     case "about-nxgos":
@@ -102,6 +102,7 @@ export async function runMenuAction(
           fichiers: "Fichiers",
           parametres: "Paramètres",
           calculator: "Calculatrice",
+          corbeille: "Corbeille",
         };
         dispatch({ type: "apps/CLOSE", payload: front });
         toast(`${labels[front] || front} fermé`);
@@ -277,9 +278,8 @@ export async function runMenuAction(
       );
       break;
     case "go-trash":
-      ensureFichiersThen(dispatch, state, () =>
-        fichiersCmd("go-sidebar", "trash")
-      );
+      dispatch({ type: "apps/OPEN", payload: "corbeille" });
+      dispatch({ type: "onTop/SET", payload: "corbeille" });
       break;
     case "go-disk":
     case "go-apps":

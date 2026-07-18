@@ -32,6 +32,7 @@ nxg-computer/
 | `fichiers` | Fichiers |
 | `parametres` | Paramètres |
 | `calculator` | Calculatrice |
+| `corbeille` | Corbeille |
 
 ## Dev UI (localhost)
 

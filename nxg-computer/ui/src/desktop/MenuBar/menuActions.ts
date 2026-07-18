@@ -93,12 +93,14 @@ export function frontAppId(state: {
   if (
     top === "fichiers" ||
     top === "parametres" ||
-    top === "calculator"
+    top === "calculator" ||
+    top === "corbeille"
   ) {
     if (state.openApps?.[top]) return top;
   }
   if (state.openApps?.fichiers) return "fichiers";
   if (state.openApps?.parametres) return "parametres";
   if (state.openApps?.calculator) return "calculator";
+  if (state.openApps?.corbeille) return "corbeille";
   return null;
 }

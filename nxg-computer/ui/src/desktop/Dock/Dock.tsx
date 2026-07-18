@@ -47,7 +47,7 @@ export default function Dock() {
       dispatch({ type: "dock/REORDER", payload: next });
     } else {
       const ids = new Set(state.dockApps.map((a: DockApp) => a.id));
-      if (!ids.has("parametres") || !ids.has("fichiers")) {
+      if (!ids.has("parametres") || !ids.has("fichiers") || !ids.has("corbeille")) {
         dispatch({ type: "dock/REORDER", payload: next });
       }
     }

@@ -24,6 +24,7 @@ const StoreProvider = ({ children }: any) => (
 const FichiersApp = lazy(() => import("./apps/fichiers/FichiersApp"));
 const ParametresApp = lazy(() => import("./apps/parametres/ParametresApp"));
 const CalculatorApp = lazy(() => import("./apps/calculator/CalculatorApp"));
+const CorbeilleApp = lazy(() => import("./apps/corbeille/CorbeilleApp"));
 const WallpaperWindow = lazy(
   () => import("./desktop/WallpaperWindow/WallpaperWindow")
 );
@@ -47,6 +48,9 @@ function App() {
           </OpenAppsGate>
           <OpenAppsGate appId="calculator">
             <CalculatorApp />
+          </OpenAppsGate>
+          <OpenAppsGate appId="corbeille">
+            <CorbeilleApp />
           </OpenAppsGate>
           <WallpaperWindow />
         </Suspense>

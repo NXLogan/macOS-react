@@ -58,8 +58,103 @@ export function trashNode(id: string): FsNode[] {
   }
 
   return commitFs(
-    nodes.map((n) => (n.id === id ? { ...n, parentId: SPECIAL.trash } : n))
+    nodes.map((n) =>
+      n.id === id
+        ? {
+            ...n,
+            trashedFrom: n.parentId,
+            parentId: SPECIAL.trash,
+          }
+        : n
+    )
   );
+}
+
+/** Park a desktop app shortcut in the Corbeille. */
+export function trashDesktopApp(app: {
+  id: string;
+  name: string;
+  icon: string;
+}): FsNode[] {
+  const nodes = loadFs();
+  const stubId = `trashed-app-${app.id}`;
+  const existing = nodes.find((n) => n.id === stubId);
+  if (existing) {
+    return commitFs(
+      nodes.map((n) =>
+        n.id === stubId
+          ? {
+              ...n,
+              name: app.name,
+              parentId: SPECIAL.trash,
+              trashedFrom: SPECIAL.desktop,
+              desktopApp: { id: app.id, name: app.name, icon: app.icon },
+              ext: "app",
+            }
+          : n
+      )
+    );
+  }
+  const stub: FsNode = {
+    id: stubId,
+    name: app.name,
+    kind: "file",
+    parentId: SPECIAL.trash,
+    createdAt: Date.now(),
+    ext: "app",
+    trashedFrom: SPECIAL.desktop,
+    desktopApp: { id: app.id, name: app.name, icon: app.icon },
+  };
+  return commitFs([...nodes, stub]);
+}
+
+/**
+ * Restore from Corbeille to previous parent (or Bureau).
+ * Returns the restored node when successful.
+ */
+export function restoreNode(id: string): {
+  nodes: FsNode[];
+  restored?: FsNode;
+} {
+  const nodes = loadFs();
+  const node = nodes.find((n) => n.id === id);
+  if (!node || node.parentId !== SPECIAL.trash) {
+    return { nodes };
+  }
+
+  const protectedIds = new Set<string>(Object.values(SPECIAL));
+  if (protectedIds.has(id)) return { nodes };
+
+  let targetParent = node.trashedFrom || SPECIAL.desktop;
+  const targetExists = nodes.some(
+    (n) => n.id === targetParent && n.kind === "folder"
+  );
+  if (!targetParent || targetParent === SPECIAL.trash || !targetExists) {
+    targetParent = SPECIAL.desktop;
+  }
+
+  // Desktop app stubs only live in trash — drop stub; caller re-adds desktop icon
+  if (node.desktopApp) {
+    return {
+      nodes: commitFs(removeNodeDeep(nodes, id)),
+      restored: {
+        ...node,
+        parentId: SPECIAL.desktop,
+        trashedFrom: undefined,
+      },
+    };
+  }
+
+  const restored: FsNode = {
+    ...node,
+    parentId: targetParent,
+    trashedFrom: undefined,
+  };
+
+  return {
+    nodes: commitFs(nodes.map((n) => (n.id === id ? restored : n))),
+    restored,
+  };
 }
 
 export function emptyTrash(): FsNode[] {
@@ -76,6 +171,14 @@ export function hardDeleteNode(id: string): FsNode[] {
   const protectedIds = new Set<string>(Object.values(SPECIAL));
   if (protectedIds.has(id)) return loadFs();
   return commitFs(removeNodeDeep(loadFs(), id));
+}
+
+export function listTrash(nodes: FsNode[] = loadFs()): FsNode[] {
+  return getChildren(nodes, SPECIAL.trash);
+}
+
+export function trashCount(nodes: FsNode[] = loadFs()): number {
+  return listTrash(nodes).length;
 }
 
 const FOLDER_OVERHEAD = 4 * 1024;

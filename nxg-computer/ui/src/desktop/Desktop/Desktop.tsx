@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { store } from "../../App";
 import checkDropdown from "../../utils/helpers/checkDropdown";
@@ -11,6 +11,31 @@ import "./Desktop.scss";
 
 export default function Desktop({ children }: any) {
   const [state, dispatch] = useContext(store);
+  const skipIconClear = useRef(false);
+
+  useEffect(() => {
+    const onMarquee = (e: Event) => {
+      const detail = (e as CustomEvent).detail as {
+        phase?: string;
+        rect?: { width: number; height: number } | null;
+      };
+      const phase = detail?.phase;
+      // After a real marquee select, the following click would wipe selection
+      if (phase === "end") {
+        const rect = detail?.rect;
+        const realDrag =
+          rect && (rect.width > 2 || rect.height > 2);
+        if (realDrag) {
+          skipIconClear.current = true;
+          window.setTimeout(() => {
+            skipIconClear.current = false;
+          }, 50);
+        }
+      }
+    };
+    window.addEventListener("nxg-desktop-marquee", onMarquee);
+    return () => window.removeEventListener("nxg-desktop-marquee", onMarquee);
+  }, []);
 
   const conditionalClick = (e: React.MouseEvent) => {
     if (state.booting || state.locked) return;
@@ -33,8 +58,11 @@ export default function Desktop({ children }: any) {
       });
     }
 
-    // Deselect desktop icons when clicking empty desktop / chrome
-    if (!(e.target as HTMLElement).closest(".desktop-icon")) {
+    // Deselect desktop icons when clicking empty desktop (not after marquee select)
+    if (
+      !skipIconClear.current &&
+      !(e.target as HTMLElement).closest(".desktop-icon")
+    ) {
       window.dispatchEvent(new Event("nxg-desktop-clear-selection"));
     }
   };
@@ -54,6 +82,7 @@ export default function Desktop({ children }: any) {
     if (target.closest(".fichiers-window")) return;
     if (target.closest(".parametres-window")) return;
     if (target.closest(".calculator-window")) return;
+    if (target.closest(".corbeille-window")) return;
     if (target.closest(".wallpaper-menu")) return;
     if (target.closest(".context-menu")) return;
 

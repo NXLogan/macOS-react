@@ -8,7 +8,12 @@ import {
   snapDesktopPosition,
 } from "../Dock/dockApps";
 import { SPECIAL } from "../../apps/fichiers/fs";
-import { createFolder, renameNode, trashNode } from "../../apps/fichiers/fsApi";
+import {
+  createFolder,
+  renameNode,
+  trashDesktopApp,
+  trashNode,
+} from "../../apps/fichiers/fsApi";
 import "./ContextMenu.scss";
 
 type MenuItem =
@@ -184,15 +189,30 @@ export default function ContextMenu() {
       }
       case "trash":
         if (!icon) break;
-        dispatch({ type: "desktop/REMOVE_ICON", payload: icon.id });
-        if (icon.kind !== "folder") {
+        // Corbeille itself just leaves the desktop (stays in the Dock)
+        if (icon.id === "corbeille") {
+          dispatch({ type: "desktop/REMOVE_ICON", payload: icon.id });
           dispatch({
             type: "dock/ADD",
             payload: { id: icon.id, name: icon.name, icon: icon.icon },
           });
-        } else if (icon.folderId) {
-          trashNode(icon.folderId);
+          break;
         }
+        dispatch({ type: "desktop/REMOVE_ICON", payload: icon.id });
+        if (icon.kind === "folder" && icon.folderId) {
+          trashNode(icon.folderId);
+        } else {
+          trashDesktopApp({
+            id: icon.id,
+            name: icon.name,
+            icon: icon.icon,
+          });
+        }
+        window.dispatchEvent(
+          new CustomEvent("nxg-toast", {
+            detail: { message: `« ${icon.name} » dans la Corbeille` },
+          })
+        );
         break;
       default:
         break;

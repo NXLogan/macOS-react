@@ -23,6 +23,12 @@ Config.Apps = {
         default = true,
         removable = true,
     },
+    corbeille = {
+        name = 'Corbeille',
+        icon = 'corbeille',
+        default = true,
+        removable = false,
+    },
 }
 
 Config.CustomApps = {}

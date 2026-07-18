@@ -4,7 +4,9 @@ import {
   createFolder,
   emptyTrash,
   renameNode,
+  restoreNode,
   totalStorageBytes,
+  trashDesktopApp,
   trashNode,
 } from "./fsApi";
 
@@ -65,12 +67,38 @@ describe("fsApi sync", () => {
     expect(loadFs().find((n) => n.id === folder.id)?.name).toBe("Renommé");
 
     trashNode(folder.id);
-    expect(loadFs().find((n) => n.id === folder.id)?.parentId).toBe(
-      SPECIAL.trash
-    );
+    const trashed = loadFs().find((n) => n.id === folder.id);
+    expect(trashed?.parentId).toBe(SPECIAL.trash);
+    expect(trashed?.trashedFrom).toBe(SPECIAL.desktop);
 
     emptyTrash();
     expect(loadFs().some((n) => n.id === folder.id)).toBe(false);
+  });
+
+  it("restoreNode puts folder back on desktop", () => {
+    const { folder } = createFolder(SPECIAL.desktop, "Récupérable");
+    trashNode(folder.id);
+    const { restored } = restoreNode(folder.id);
+    expect(restored?.parentId).toBe(SPECIAL.desktop);
+    expect(loadFs().find((n) => n.id === folder.id)?.parentId).toBe(
+      SPECIAL.desktop
+    );
+    expect(loadFs().find((n) => n.id === folder.id)?.trashedFrom).toBeUndefined();
+  });
+
+  it("trashDesktopApp + restore removes stub", () => {
+    trashDesktopApp({
+      id: "calculator",
+      name: "Calculatrice",
+      icon: "calculator.png",
+    });
+    const stub = loadFs().find((n) => n.id === "trashed-app-calculator");
+    expect(stub?.parentId).toBe(SPECIAL.trash);
+    expect(stub?.desktopApp?.id).toBe("calculator");
+
+    const { restored } = restoreNode("trashed-app-calculator");
+    expect(restored?.desktopApp?.id).toBe("calculator");
+    expect(loadFs().some((n) => n.id === "trashed-app-calculator")).toBe(false);
   });
 
   it("storage breakdown grows when files are added under Documents", () => {

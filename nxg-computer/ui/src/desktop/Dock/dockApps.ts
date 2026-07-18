@@ -26,6 +26,7 @@ export const APP_CATALOG: DockApp[] = [
   { id: "fichiers", name: "Fichiers", icon: "fichiers.png" },
   { id: "parametres", name: "Paramètres", icon: "parametres.png" },
   { id: "calculator", name: "Calculatrice", icon: "calculator.png" },
+  { id: "corbeille", name: "Corbeille", icon: "corbeille.png" },
 ];
 
 /** Apps that can open a window today. */
@@ -33,6 +34,7 @@ export const OPENABLE_APP_IDS = [
   "fichiers",
   "parametres",
   "calculator",
+  "corbeille",
 ] as const;
 
 export type OpenableAppId = (typeof OPENABLE_APP_IDS)[number];
@@ -42,7 +44,7 @@ export function isOpenableAppId(id: string): id is OpenableAppId {
 }
 
 /** Apps that must stay available in the dock unless explicitly on the desktop. */
-export const PINNED_CORE_APPS = ["fichiers", "parametres"] as const;
+export const PINNED_CORE_APPS = ["fichiers", "parametres", "corbeille"] as const;
 
 /** Drop unknown / stub app ids left over from older catalogs. */
 export function sanitizeDockApps(dockApps: DockApp[]): DockApp[] {
@@ -74,6 +76,8 @@ export function ensureCoreDockApps(
     if (id === "parametres") {
       const fi = next.findIndex((a) => a.id === "fichiers");
       next.splice(fi >= 0 ? fi + 1 : 0, 0, app);
+    } else if (id === "corbeille") {
+      next.push(app);
     } else {
       next.unshift(app);
     }

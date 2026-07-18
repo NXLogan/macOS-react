@@ -136,7 +136,12 @@ describe("APP_CATALOG", () => {
   it("includes core apps", () => {
     const ids = APP_CATALOG.map((a) => a.id);
     expect(ids).toEqual(
-      expect.arrayContaining(["fichiers", "parametres", "calculator"])
+      expect.arrayContaining([
+        "fichiers",
+        "parametres",
+        "calculator",
+        "corbeille",
+      ])
     );
   });
 });
