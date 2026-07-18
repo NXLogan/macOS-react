@@ -1,7 +1,7 @@
 .fichiers-window {
   position: relative;
-  width: min(960px, 82vw);
-  height: min(600px, 74vh);
+  width: 100%;
+  height: 100%;
   background: var(--mac-glass);
   backdrop-filter: blur(40px) saturate(160%);
   -webkit-backdrop-filter: blur(40px) saturate(160%);
@@ -18,12 +18,9 @@
 }
 
 .nxg-drag-root:has(> .fichiers-window) {
+  width: min(960px, 82vw);
+  height: min(600px, 74vh);
   z-index: 25;
-}
-
-.nxg-drag-root.is-maximized > .fichiers-window {
-  width: 100%;
-  height: 100%;
 }
 
 .fichiers-titlebar {

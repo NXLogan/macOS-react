@@ -2,8 +2,8 @@
   position: relative;
   left: auto;
   top: auto;
-  width: min(920px, 86vw);
-  height: min(640px, 78vh);
+  width: 100%;
+  height: 100%;
   background: var(--mac-glass);
   backdrop-filter: blur(40px) saturate(160%);
   -webkit-backdrop-filter: blur(40px) saturate(160%);
@@ -22,12 +22,9 @@
 .nxg-drag-root:has(> .parametres-window) {
   left: 10%;
   top: 8%;
+  width: min(920px, 86vw);
+  height: min(640px, 78vh);
   z-index: 28;
-}
-
-.nxg-drag-root.is-maximized > .parametres-window {
-  width: 100%;
-  height: 100%;
 }
 
 .parametres-titlebar {
