@@ -15,6 +15,7 @@ import {
   reconcileDesktopFolders,
 } from "./reconcileDesktop";
 import type { MarqueeRect } from "../DesktopMarquee/DesktopMarquee";
+import { useT } from "../../i18n/useT";
 import "./DesktopIcons.scss";
 
 export { reconcileDesktopFolders } from "./reconcileDesktop";
@@ -61,6 +62,7 @@ function idsHitByMarquee(rect: MarqueeRect): string[] {
 
 export default function DesktopIcons() {
   const [state, dispatch] = useContext(store);
+  const t = useT();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [overDock, setOverDock] = useState(false);
@@ -322,7 +324,13 @@ export default function DesktopIcons() {
                 alt={icon.name}
                 draggable={false}
               />
-              <span className="desktop-icon-label">{icon.name}</span>
+              <span className="desktop-icon-label">
+                {icon.kind === "folder"
+                  ? icon.name
+                  : t(`apps.${icon.id}.name`).startsWith("apps.")
+                    ? icon.name
+                    : t(`apps.${icon.id}.name`)}
+              </span>
             </motion.button>
           );
         })}

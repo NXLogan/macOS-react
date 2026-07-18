@@ -72,9 +72,11 @@ exports['nxg-computer']:SaveProfile(computerId, identifier, username, profile)
 exports['nxg-computer']:CanUseComputer(src, computerId)
 ```
 
-## Framework
+## Langues (UI)
 
-`Config.Framework` dans [`config/config.lua`](config/config.lua) :
+Paramètres → Réseau → **Langue** : Français, English, العربية (RTL), Русский.
+
+Les menus, apps, écran de verrouillage, App Store et notifications Lua suivent la langue (`Config.Locale` côté FiveM pour les notifs jeu).
 
 | Valeur | Description |
 |--------|-------------|

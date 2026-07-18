@@ -10,6 +10,8 @@ import {
 import { SPECIAL } from "../../apps/fichiers/fs";
 import { createFolder, emptyTrash } from "../../apps/fichiers/fsApi";
 import { fetchNui, isEnvBrowser } from "../../lib/nui/fetchNui";
+import { tFor } from "../../i18n/useT";
+import { appName } from "../../i18n";
 
 type Dispatch = (action: { type: string; payload?: unknown; index?: number; folderId?: string }) => void;
 
@@ -143,14 +145,14 @@ export async function runMenuAction(
       dispatch({ type: "section/RESET" });
       break;
     case "restart":
-      if (window.confirm("Redémarrer NXGos ?")) {
+      if (window.confirm(tFor(state.settings?.prefs?.language, "toast.restartConfirm"))) {
         window.location.reload();
       }
       break;
     case "shutdown":
-      if (window.confirm("Éteindre NXGos ?")) {
+      if (window.confirm(tFor(state.settings?.prefs?.language, "toast.shutdownConfirm"))) {
         dispatch({ type: "system/SHUTDOWN" });
-        toast("Ordinateur éteint");
+        toast(tFor(state.settings?.prefs?.language, "toast.poweredOff"));
         if (!isEnvBrowser()) {
           void fetchNui("computer:close", {}, { ok: true });
         }

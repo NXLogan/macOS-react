@@ -1,12 +1,16 @@
 import DropdownItemType from "../../store/types/DropdownItemType";
 import storeType from "../../store/types/store";
 import { frontAppId, MenuActionId } from "../../desktop/MenuBar/menuActions";
+import { tFor } from "../../i18n/useT";
 
 type Item = DropdownItemType & { id?: MenuActionId; shortcut?: string };
 
 const d = (): Item => ({ name: "divider", available: false });
 
 const getDropdownContent = (state: storeType): Item[] => {
+  const lang = state.settings?.prefs?.language;
+  const tr = (key: string) => tFor(lang, key);
+
   const front = frontAppId(state);
   const fichiersOpen = Boolean(state.openApps?.fichiers);
   const fichiersActive =
@@ -14,246 +18,130 @@ const getDropdownContent = (state: storeType): Item[] => {
   const hasFront = Boolean(front);
   const canWin = hasFront;
 
+  const item = (
+    id: MenuActionId | undefined,
+    key: string,
+    available: boolean,
+    shortcut?: string
+  ): Item => ({
+    id,
+    name: tr(key),
+    available,
+    shortcut,
+  });
+
   switch (state.section) {
     case "logo":
       return [
-        { id: "about-nxgos", name: "À propos de NXGos", available: true },
+        item("about-nxgos", "menu.about-nxgos", true),
         d(),
-        { id: "open-settings", name: "Paramètres NXGos…", available: true },
-        { id: "store", name: "Boutique NXG", available: true },
+        item("open-settings", "menu.open-settings", true),
+        item("store", "menu.store", true),
         d(),
-        { id: "recent-items", name: "Éléments récents", available: true },
+        item("recent-items", "menu.recent-items", true),
         d(),
-        {
-          id: "force-quit",
-          name: "Forcer la fermeture",
-          available: hasFront,
-          shortcut: "⌥⌘Esc",
-        },
+        item("force-quit", "menu.force-quit", hasFront, "⌥⌘Esc"),
         d(),
-        { id: "sleep", name: "Veille", available: true },
-        { id: "restart", name: "Redémarrer…", available: true },
-        { id: "shutdown", name: "Éteindre…", available: true },
+        item("sleep", "menu.sleep", true),
+        item("restart", "menu.restart", true),
+        item("shutdown", "menu.shutdown", true),
         d(),
-        { id: "lock", name: "Verrouiller l’écran", available: true },
-        { id: "logout", name: "Se déconnecter…", available: true },
+        item("lock", "menu.lock", true),
+        item("logout", "menu.logout", true),
       ];
     case "fichiers":
       return [
-        { id: "about-fichiers", name: "À propos de Fichiers", available: true },
+        item("about-fichiers", "menu.about-fichiers", true),
         d(),
-        { id: "fichiers-prefs", name: "Préférences…", available: true },
+        item("fichiers-prefs", "menu.fichiers-prefs", true),
         d(),
-        { id: "empty-trash", name: "Vider la corbeille", available: true },
+        item("empty-trash", "menu.empty-trash", true),
         d(),
-        {
-          id: "hide-fichiers",
-          name: "Masquer Fichiers",
-          available: fichiersActive,
-        },
-        {
-          id: "hide-others",
-          name: "Masquer les autres",
-          available: hasFront,
-        },
-        { id: "show-all", name: "Tout afficher", available: true },
+        item("hide-fichiers", "menu.hide-fichiers", fichiersActive),
+        item("hide-others", "menu.hide-others", hasFront),
+        item("show-all", "menu.show-all", true),
       ];
     case "file":
       return [
-        { id: "new-fichiers", name: "Nouvelle fenêtre Fichiers", available: true },
-        {
-          id: "new-folder",
-          name: "Nouveau dossier",
-          available: true,
-          shortcut: "⇧⌘N",
-        },
-        {
-          name: "Nouveau dossier intelligent",
-          available: false,
-        },
+        item("new-fichiers", "menu.new-fichiers", true),
+        item("new-folder", "menu.new-folder", true, "⇧⌘N"),
+        { name: tr("menu.new-smart-folder"), available: false },
         d(),
-        {
-          id: "open-selected",
-          name: "Ouvrir",
-          available: fichiersActive,
-          shortcut: "⌘O",
-        },
-        { name: "Ouvrir avec", available: false },
-        { name: "Imprimer", available: false },
-        {
-          id: "close-window",
-          name: "Fermer la fenêtre",
-          available: canWin,
-          shortcut: "⌘W",
-        },
+        item("open-selected", "menu.open-selected", fichiersActive, "⌘O"),
+        { name: tr("menu.open-with"), available: false },
+        { name: tr("menu.print"), available: false },
+        item("close-window", "menu.close-window", canWin, "⌘W"),
         d(),
-        {
-          id: "get-info",
-          name: "Obtenir des infos",
-          available: fichiersActive,
-          shortcut: "⌘I",
-        },
-        {
-          id: "rename",
-          name: "Renommer",
-          available: fichiersActive,
-        },
-        {
-          id: "duplicate",
-          name: "Dupliquer",
-          available: fichiersActive,
-          shortcut: "⌘D",
-        },
-        { name: "Créer un alias", available: false },
-        {
-          id: "trash",
-          name: "Déplacer vers la corbeille",
-          available: fichiersActive,
-          shortcut: "⌘⌫",
-        },
-        { name: "Éjecter", available: false },
+        item("get-info", "menu.get-info", fichiersActive, "⌘I"),
+        item("rename", "menu.rename", fichiersActive),
+        item("duplicate", "menu.duplicate", fichiersActive, "⌘D"),
+        { name: tr("menu.create-alias"), available: false },
+        item("trash", "menu.trash", fichiersActive, "⌘⌫"),
+        { name: tr("menu.eject"), available: false },
         d(),
-        {
-          id: "search",
-          name: "Rechercher",
-          available: true,
-          shortcut: "⌘F",
-        },
+        item("search", "menu.search", true, "⌘F"),
       ];
     case "edit":
       return [
-        { id: "undo", name: "Annuler", available: true, shortcut: "⌘Z" },
-        { id: "redo", name: "Rétablir", available: true, shortcut: "⇧⌘Z" },
+        item("undo", "menu.undo", true, "⌘Z"),
+        item("redo", "menu.redo", true, "⇧⌘Z"),
         d(),
-        {
-          id: "cut",
-          name: "Couper",
-          available: fichiersActive,
-          shortcut: "⌘X",
-        },
-        {
-          id: "copy",
-          name: "Copier",
-          available: fichiersActive,
-          shortcut: "⌘C",
-        },
-        {
-          id: "paste",
-          name: "Coller",
-          available: fichiersActive,
-          shortcut: "⌘V",
-        },
-        {
-          id: "select-all",
-          name: "Sélectionner tout",
-          available: fichiersActive,
-          shortcut: "⌘A",
-        },
+        item("cut", "menu.cut", fichiersActive, "⌘X"),
+        item("copy", "menu.copy", fichiersActive, "⌘C"),
+        item("paste", "menu.paste", fichiersActive, "⌘V"),
+        item("select-all", "menu.select-all", fichiersActive, "⌘A"),
         d(),
-        { id: "clipboard", name: "Afficher le presse-papiers", available: true },
-        { name: "Démarrer Dictée", available: false },
-        { id: "emoji", name: "Emojis et symboles", available: true },
+        item("clipboard", "menu.clipboard", true),
+        { name: tr("menu.dictation"), available: false },
+        item("emoji", "menu.emoji", true),
       ];
     case "view":
       return [
-        {
-          id: "view-icons",
-          name: "en icônes",
-          available: true,
-        },
-        {
-          id: "view-list",
-          name: "en liste",
-          available: true,
-        },
-        {
-          id: "view-columns",
-          name: "en colonnes",
-          available: true,
-        },
-        {
-          id: "view-gallery",
-          name: "en galerie",
-          available: true,
-        },
+        item("view-icons", "menu.view-icons", true),
+        item("view-list", "menu.view-list", true),
+        item("view-columns", "menu.view-columns", true),
+        item("view-gallery", "menu.view-gallery", true),
         d(),
-        { id: "sort-name", name: "Trier par nom", available: true },
-        { id: "cleanup", name: "Ranger le Bureau", available: true },
+        item("sort-name", "menu.sort-name", true),
+        item("cleanup", "menu.cleanup", true),
         d(),
-        {
-          name: "Afficher la barre latérale",
-          available: false,
-        },
-        {
-          name: "Afficher la barre de chemin",
-          available: false,
-        },
-        {
-          name: "Afficher la barre d’état",
-          available: false,
-        },
+        { name: tr("menu.show-sidebar"), available: false },
+        { name: tr("menu.show-path"), available: false },
+        { name: tr("menu.show-status"), available: false },
       ];
     case "go":
       return [
-        {
-          id: "go-back",
-          name: "Retour",
-          available: fichiersActive,
-          shortcut: "⌘[",
-        },
-        {
-          id: "go-forward",
-          name: "Avancer",
-          available: fichiersActive,
-          shortcut: "⌘]",
-        },
+        item("go-back", "menu.go-back", fichiersActive, "⌘["),
+        item("go-forward", "menu.go-forward", fichiersActive, "⌘]"),
         d(),
-        { id: "go-recents", name: "Récents", available: true },
-        { id: "go-documents", name: "Documents", available: true },
-        { id: "go-desktop", name: "Bureau", available: true },
-        { id: "go-downloads", name: "Téléchargements", available: true },
-        { id: "go-trash", name: "Corbeille", available: true },
-        { id: "go-disk", name: "Ordinateur", available: true },
-        { id: "go-airdrop", name: "Partage NXG", available: true },
-        { id: "go-network", name: "Réseau", available: true },
-        { id: "go-drive", name: "NXG Drive", available: true },
-        { id: "go-apps", name: "Applications", available: true },
+        item("go-recents", "menu.go-recents", true),
+        item("go-documents", "menu.go-documents", true),
+        item("go-desktop", "menu.go-desktop", true),
+        item("go-downloads", "menu.go-downloads", true),
+        item("go-trash", "menu.go-trash", true),
+        item("go-disk", "menu.go-disk", true),
+        item("go-airdrop", "menu.go-airdrop", true),
+        item("go-network", "menu.go-network", true),
+        item("go-drive", "menu.go-drive", true),
+        item("go-apps", "menu.go-apps", true),
         d(),
-        { id: "go-folder", name: "Aller au dossier…", available: true },
-        { id: "go-server", name: "Se connecter au serveur…", available: true },
+        item("go-folder", "menu.go-folder", true),
+        item("go-server", "menu.go-server", true),
       ];
     case "windows":
       return [
-        {
-          id: "minimize",
-          name: "Réduire",
-          available: canWin,
-          shortcut: "⌘M",
-        },
-        {
-          id: "maximize",
-          name: "Zoom",
-          available: canWin,
-        },
+        item("minimize", "menu.minimize", canWin, "⌘M"),
+        item("maximize", "menu.maximize", canWin),
         d(),
-        {
-          id: "cycle-windows",
-          name: "Parcourir les fenêtres",
-          available: true,
-          shortcut: "⌘`",
-        },
+        item("cycle-windows", "menu.cycle-windows", true, "⌘`"),
         d(),
-        {
-          id: "bring-front",
-          name: "Tout ramener au premier plan",
-          available: true,
-        },
+        item("bring-front", "menu.bring-front", true),
       ];
     case "help":
       return [
-        { id: "feedback", name: "Envoyer un retour Fichiers", available: true },
+        item("feedback", "menu.feedback", true),
         d(),
-        { id: "help-nxgos", name: "Aide NXGos", available: true },
+        item("help-nxgos", "menu.help-nxgos", true),
       ];
     default:
       return [];

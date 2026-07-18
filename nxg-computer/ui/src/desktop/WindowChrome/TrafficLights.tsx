@@ -4,6 +4,7 @@ import { ReactComponent as Close } from "../../assets/images/svg/close.svg";
 import { ReactComponent as Minimize } from "../../assets/images/svg/minimize.svg";
 import { ReactComponent as Stretch } from "../../assets/images/svg/stretch.svg";
 import { requestWindowClose } from "./AppWindowShell";
+import { useT } from "../../i18n/useT";
 import "./AppWindow.scss";
 
 type Props = {
@@ -13,6 +14,7 @@ type Props = {
 
 export default function TrafficLights({ appId, onClose }: Props) {
   const [state, dispatch] = useContext(store);
+  const t = useT();
   const chrome = state.windowChrome?.[appId] || {
     minimized: false,
     maximized: false,
@@ -46,8 +48,8 @@ export default function TrafficLights({ appId, onClose }: Props) {
         type="button"
         className="dot red"
         onClick={close}
-        aria-label="Fermer"
-        title="Fermer"
+        aria-label={t("window.close")}
+        title={t("window.close")}
       >
         <Close className="ico" />
       </button>
@@ -55,8 +57,8 @@ export default function TrafficLights({ appId, onClose }: Props) {
         type="button"
         className="dot yellow"
         onClick={minimize}
-        aria-label="Réduire"
-        title="Réduire dans la barre"
+        aria-label={t("window.minimize")}
+        title={t("window.minimizeDock")}
       >
         <Minimize className="ico" />
       </button>
@@ -64,8 +66,10 @@ export default function TrafficLights({ appId, onClose }: Props) {
         type="button"
         className="dot green"
         onClick={toggleMax}
-        aria-label={chrome.maximized ? "Quitter le plein écran" : "Agrandir"}
-        title={chrome.maximized ? "Réduire la fenêtre" : "Agrandir"}
+        aria-label={
+          chrome.maximized ? t("window.exitFullscreen") : t("window.maximize")
+        }
+        title={chrome.maximized ? t("window.shrink") : t("window.maximize")}
       >
         <Stretch className="ico" />
       </button>

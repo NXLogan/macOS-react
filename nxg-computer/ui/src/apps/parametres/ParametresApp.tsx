@@ -30,27 +30,29 @@ import {
   ThemeMode,
   TOTAL_STORAGE_GB,
 } from "./settingsMeta";
+import { LOCALES, localeTag } from "../../i18n";
+import { useT } from "../../i18n/useT";
 import "./ParametresApp.scss";
 
-const SECTIONS: {
+const SECTION_META: {
   id: SettingsSectionId;
-  label: string;
+  labelKey: string;
   icon: string;
   color: string;
 }[] = [
-  { id: "apparence", label: "Apparence", icon: "🎨", color: "#bf5af2" },
-  { id: "compte", label: "Compte", icon: "👤", color: "#64d2ff" },
-  { id: "reseau", label: "Réseau", icon: "📡", color: "#0a84ff" },
-  { id: "notifications", label: "Notifications", icon: "🔔", color: "#ff453a" },
-  { id: "dock", label: "Barre & Bureau", icon: "⬜", color: "#8e8e93" },
-  { id: "stockage", label: "Stockage", icon: "💾", color: "#30d158" },
+  { id: "apparence", labelKey: "settings.apparence", icon: "🎨", color: "#bf5af2" },
+  { id: "compte", labelKey: "settings.compte", icon: "👤", color: "#64d2ff" },
+  { id: "reseau", labelKey: "settings.reseau", icon: "📡", color: "#0a84ff" },
+  { id: "notifications", labelKey: "settings.notifications", icon: "🔔", color: "#ff453a" },
+  { id: "dock", labelKey: "settings.dock", icon: "⬜", color: "#8e8e93" },
+  { id: "stockage", labelKey: "settings.stockage", icon: "💾", color: "#30d158" },
   {
     id: "confidentialite",
-    label: "Confidentialité",
+    labelKey: "settings.confidentialite",
     icon: "🔒",
     color: "#ff9f0a",
   },
-  { id: "apropos", label: "À propos", icon: "ℹ️", color: "#5e5ce6" },
+  { id: "apropos", labelKey: "settings.apropos", icon: "ℹ️", color: "#5e5ce6" },
 ];
 
 function PaneHead({
@@ -60,7 +62,7 @@ function PaneHead({
   sectionId: SettingsSectionId;
   title: string;
 }) {
-  const meta = SECTIONS.find((s) => s.id === sectionId);
+  const meta = SECTION_META.find((s) => s.id === sectionId);
   return (
     <div className="ps-pane-head">
       <div
@@ -140,12 +142,22 @@ function Segmented<T extends string>({
 
 export default function ParametresApp() {
   const [state, dispatch] = useContext(store);
+  const t = useT();
   const [section, setSection] = useState<SettingsSectionId>("apparence");
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const avatarRef = useRef<HTMLInputElement>(null);
   const wallRef = useRef<HTMLInputElement>(null);
   const prefs = state.settings.prefs;
+
+  const SECTIONS = useMemo(
+    () =>
+      SECTION_META.map((s) => ({
+        ...s,
+        label: t(s.labelKey),
+      })),
+    [t]
+  );
 
   const open = Boolean(state.openApps?.parametres);
 
@@ -372,7 +384,7 @@ export default function ParametresApp() {
           <main className="parametres-content">
             {section === "apparence" && (
               <div className="ps-pane">
-                <PaneHead sectionId="apparence" title="Apparence" />
+                <PaneHead sectionId="apparence" title={t("settings.apparence")} />
                 <h2>Fond d’écran</h2>
                 <section className="ps-card ps-card-pad">
                   <img className="ps-wall-preview" src={wallPreview} alt="" />
@@ -477,7 +489,7 @@ export default function ParametresApp() {
 
             {section === "compte" && (
               <div className="ps-pane">
-                <PaneHead sectionId="compte" title="Compte" />
+                <PaneHead sectionId="compte" title={t("settings.compte")} />
                 <h2>Profil</h2>
                 <section className="ps-card ps-card-pad ps-profile">
                   <button
@@ -563,7 +575,7 @@ export default function ParametresApp() {
 
             {section === "reseau" && (
               <div className="ps-pane">
-                <PaneHead sectionId="reseau" title="Réseau" />
+                <PaneHead sectionId="reseau" title={t("settings.reseau")} />
                 <h2>Connexion</h2>
                 <section className="ps-card">
                   <Row label="Wi‑Fi" hint={prefs.wifi ? "NXG_City_5G" : "Off"}>
@@ -587,7 +599,7 @@ export default function ParametresApp() {
                       }
                     />
                   </Row>
-                  <Row label="Langue">
+                  <Row label={t("settings.language")}>
                     <select
                       className="ps-select"
                       value={prefs.language}
@@ -595,18 +607,22 @@ export default function ParametresApp() {
                         patchPrefs({ language: e.target.value })
                       }
                     >
-                      <option value="fr">Français</option>
-                      <option value="en">English</option>
-                      <option value="es">Español</option>
+                      {LOCALES.map((l: { code: string; native: string }) => (
+                        <option key={l.code} value={l.code}>
+                          {l.native}
+                        </option>
+                      ))}
                     </select>
                   </Row>
                   <Row
-                    label="Date et heure"
-                    hint="Synchronisé avec le serveur"
+                    label={t("settings.dateTime")}
+                    hint={t("settings.dateTimeHint")}
                   >
                     <span className="ps-mono">
                       {new Date().toLocaleString(
-                        prefs.language === "en" ? "en-GB" : "fr-FR"
+                        localeTag(
+                          (prefs.language as "fr" | "en" | "ar" | "ru") || "fr"
+                        )
                       )}
                     </span>
                   </Row>
@@ -616,7 +632,7 @@ export default function ParametresApp() {
 
             {section === "notifications" && (
               <div className="ps-pane">
-                <PaneHead sectionId="notifications" title="Notifications" />
+                <PaneHead sectionId="notifications" title={t("settings.notifications")} />
                 <h2>Autorisations</h2>
                 <section className="ps-card">
                   {(
@@ -663,7 +679,7 @@ export default function ParametresApp() {
 
             {section === "dock" && (
               <div className="ps-pane">
-                <PaneHead sectionId="dock" title="Barre & Bureau" />
+                <PaneHead sectionId="dock" title={t("settings.dock")} />
                 <h2>Apps épinglées</h2>
                 <section className="ps-card ps-card-pad">
                   <p className="ps-hint">
@@ -715,7 +731,7 @@ export default function ParametresApp() {
 
             {section === "stockage" && (
               <div className="ps-pane">
-                <PaneHead sectionId="stockage" title="Stockage" />
+                <PaneHead sectionId="stockage" title={t("settings.stockage")} />
                 <h2>Disque NXG</h2>
                 <section className="ps-card ps-card-pad">
                   <div className="ps-storage-head">
@@ -759,7 +775,7 @@ export default function ParametresApp() {
               <div className="ps-pane">
                 <PaneHead
                   sectionId="confidentialite"
-                  title="Confidentialité"
+                  title={t("settings.confidentialite")}
                 />
                 <h2>Permissions</h2>
                 <section className="ps-card">
@@ -790,8 +806,8 @@ export default function ParametresApp() {
                 <h2>Sécurité</h2>
                 <section className="ps-card">
                   <Row
-                    label="Veille puis extinction"
-                    hint="Verrouille après inactivité, puis éteint après la même durée"
+                    label={t("settings.sleepShutdown")}
+                    hint={t("settings.sleepHint")}
                   >
                     <select
                       className="ps-select"
@@ -802,11 +818,11 @@ export default function ParametresApp() {
                         })
                       }
                     >
-                      <option value={1}>1 minute</option>
-                      <option value={5}>5 minutes</option>
-                      <option value={10}>10 minutes</option>
-                      <option value={15}>15 minutes</option>
-                      <option value={0}>Jamais</option>
+                      <option value={1}>{t("settings.minute")}</option>
+                      <option value={5}>{t("settings.minutes", { n: 5 })}</option>
+                      <option value={10}>{t("settings.minutes", { n: 10 })}</option>
+                      <option value={15}>{t("settings.minutes", { n: 15 })}</option>
+                      <option value={0}>{t("settings.never")}</option>
                     </select>
                   </Row>
                 </section>
@@ -815,7 +831,7 @@ export default function ParametresApp() {
 
             {section === "apropos" && (
               <div className="ps-pane">
-                <PaneHead sectionId="apropos" title="À propos" />
+                <PaneHead sectionId="apropos" title={t("settings.apropos")} />
                 <section className="ps-card ps-about">
                   <div className="ps-about-logo">NXG</div>
                   <h2>NXGos</h2>

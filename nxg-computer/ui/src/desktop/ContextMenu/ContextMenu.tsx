@@ -14,47 +14,49 @@ import {
   trashDesktopApp,
   trashNode,
 } from "../../apps/fichiers/fsApi";
+import { useT } from "../../i18n/useT";
 import "./ContextMenu.scss";
 
 type MenuItem =
   | { type: "item"; label: string; action: string; disabled?: boolean }
   | { type: "divider" };
 
-const DESKTOP_ITEMS: MenuItem[] = [
-  { type: "item", label: "Nouveau dossier", action: "new-folder" },
-  { type: "divider" },
-  { type: "item", label: "Lire les informations", action: "get-info" },
-  {
-    type: "item",
-    label: "Modifier le fond d'écran…",
-    action: "wallpaper",
-  },
-  { type: "divider" },
-  { type: "item", label: "Utiliser les piles", action: "stacks", disabled: true },
-  { type: "item", label: "Trier par nom", action: "sort-name" },
-  { type: "item", label: "Ranger", action: "cleanup" },
-  { type: "item", label: "Ranger par nom", action: "cleanup-name" },
-  { type: "divider" },
-  {
-    type: "item",
-    label: "Afficher les options de présentation",
-    action: "view-options",
-  },
-];
+function desktopItems(t: (k: string) => string): MenuItem[] {
+  return [
+    { type: "item", label: t("ctx.newFolder"), action: "new-folder" },
+    { type: "divider" },
+    { type: "item", label: t("ctx.getInfo"), action: "get-info" },
+    {
+      type: "item",
+      label: t("ctx.changeWallpaper"),
+      action: "wallpaper",
+    },
+    { type: "divider" },
+    { type: "item", label: t("menu.sort-name"), action: "sort-name" },
+    { type: "item", label: t("ctx.cleanup"), action: "cleanup" },
+    { type: "item", label: t("menu.cleanup"), action: "cleanup-name" },
+  ];
+}
 
-const ICON_ITEMS: MenuItem[] = [
-  { type: "item", label: "Ouvrir", action: "open" },
-  { type: "divider" },
-  { type: "item", label: "Lire les informations", action: "get-info-icon" },
-  { type: "divider" },
-  { type: "item", label: "Renommer", action: "rename" },
-  { type: "item", label: "Placer dans la Corbeille", action: "trash" },
-];
+function iconItems(t: (k: string) => string): MenuItem[] {
+  return [
+    { type: "item", label: t("ctx.open"), action: "open" },
+    { type: "divider" },
+    { type: "item", label: t("ctx.getInfo"), action: "get-info-icon" },
+    { type: "divider" },
+    { type: "item", label: t("ctx.rename"), action: "rename" },
+    { type: "item", label: t("ctx.moveToTrash"), action: "trash" },
+  ];
+}
 
 export default function ContextMenu() {
   const [state, dispatch] = useContext(store);
+  const t = useT();
   const menuRef = useRef<HTMLDivElement>(null);
   const { open, x, y, target, targetId } = state.contextMenu;
+
+  const DESKTOP_ITEMS = desktopItems(t);
+  const ICON_ITEMS = iconItems(t);
 
   useLayoutEffect(() => {
     if (!open || !menuRef.current) return;

@@ -2,22 +2,26 @@ import React, { FormEvent, useContext, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { store } from "../../App";
 import getDate from "../../utils/helpers/getDate";
+import { useT } from "../../i18n/useT";
 import "./LockScreen.scss";
 
 export default function LockScreen() {
   const [state, dispatch] = useContext(store);
+  const t = useT();
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(false);
   const [touchBusy, setTouchBusy] = useState(false);
-  const [clock, setClock] = useState(getDate());
+  const lang = state.settings?.prefs?.language;
+  const [clock, setClock] = useState(() => getDate(lang));
   const lockMethod = state.settings?.prefs?.lockMethod || "password";
   const showPreview = state.settings?.prefs?.lockScreenPreview !== false;
 
   useEffect(() => {
-    const id = window.setInterval(() => setClock(getDate()), 30000);
+    setClock(getDate(lang));
+    const id = window.setInterval(() => setClock(getDate(lang)), 30000);
     return () => window.clearInterval(id);
-  }, []);
+  }, [lang]);
 
   const unlock = () => {
     if (password === state.user.password) {
@@ -65,7 +69,7 @@ export default function LockScreen() {
           <div className="lock-preview">
             {state.notifications.length === 1
               ? state.notifications[0].title
-              : `${state.notifications.length} notifications`}
+              : t("lock.notifications", { n: state.notifications.length })}
           </div>
         ) : null}
       </div>
@@ -97,7 +101,7 @@ export default function LockScreen() {
             className={`lock-touchid ${touchBusy ? "busy" : ""}`}
             onClick={fakeTouchId}
           >
-            {touchBusy ? "Authentification…" : "NXG ID"}
+            {touchBusy ? t("lock.authenticating") : t("lock.touchId")}
           </button>
         ) : (
           <>
@@ -106,7 +110,7 @@ export default function LockScreen() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mot de passe"
+                placeholder={t("lock.password")}
                 autoFocus
                 autoComplete="off"
                 spellCheck={false}
@@ -116,20 +120,20 @@ export default function LockScreen() {
                 className="lock-icon-btn"
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={
-                  showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"
+                  showPassword ? t("lock.hidePassword") : t("lock.showPassword")
                 }
               >
-                {showPassword ? "MASQUER" : "AFFICHER"}
+                {showPassword ? t("lock.hide") : t("lock.show")}
               </button>
               <button
                 type="submit"
                 className="lock-icon-btn submit"
-                aria-label="Déverrouiller"
+                aria-label={t("lock.unlock")}
               >
                 ↵
               </button>
             </div>
-            <p className="lock-hint">Entrez le mot de passe pour déverrouiller</p>
+            <p className="lock-hint">{t("lock.hint")}</p>
           </>
         )}
       </motion.form>

@@ -19,3 +19,20 @@
 .filter {
   display: none;
 }
+
+/* Arabic RTL */
+html.nxg-rtl,
+html[dir="rtl"] {
+  .nav-bar,
+  .dock,
+  .parametres-window,
+  .lock-panel,
+  .desktop-icon-label {
+    direction: rtl;
+  }
+
+  .nxg-traffic {
+    flex-direction: row-reverse;
+  }
+}
+

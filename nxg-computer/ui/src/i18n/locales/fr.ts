@@ -102,7 +102,10 @@ const fr: Dict = {
   // Window chrome
   "window.close": "Fermer",
   "window.minimize": "Réduire",
-  "window.maximize": "Plein écran",
+  "window.minimizeDock": "Réduire dans la barre",
+  "window.maximize": "Agrandir",
+  "window.exitFullscreen": "Quitter le plein écran",
+  "window.shrink": "Réduire la fenêtre",
 
   // Settings sections
   "settings.title": "Paramètres",
@@ -130,6 +133,8 @@ const fr: Dict = {
   "settings.wifi": "Wi‑Fi",
   "settings.bluetooth": "Bluetooth",
   "settings.language": "Langue",
+  "settings.dateTime": "Date et heure",
+  "settings.dateTimeHint": "Synchronisé avec le serveur",
   "settings.lockMethod": "Verrouillage",
   "settings.lockPassword": "Mot de passe",
   "settings.lockTouchId": "NXG ID",
@@ -193,6 +198,7 @@ const fr: Dict = {
   "apps.calendrier.blurb": "Agenda et événements",
   "apps.mail.name": "Mail",
   "apps.mail.blurb": "Boîte de réception",
+  "apps.cat.all": "Tous",
   "apps.cat.system": "Système",
   "apps.cat.utilities": "Utilitaires",
   "apps.cat.productivity": "Productivité",

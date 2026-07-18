@@ -9,14 +9,27 @@ import {
   loadInstalledIds,
   uninstallApp,
 } from "../registry";
+import { useT } from "../../i18n/useT";
 import "./AppStoreApp.scss";
+
+const CAT_KEY: Record<string, string> = {
+  Système: "apps.cat.system",
+  Utilitaires: "apps.cat.utilities",
+  Productivité: "apps.cat.productivity",
+  Créativité: "apps.cat.creativity",
+  Internet: "apps.cat.internet",
+  Divertissement: "apps.cat.entertainment",
+  Développeur: "apps.cat.developer",
+  Navigation: "apps.cat.navigation",
+};
 
 export default function AppStoreApp() {
   const [state, dispatch] = useContext(store);
+  const t = useT();
   const open = Boolean(state.openApps?.appstore);
   const [installed, setInstalled] = useState(loadInstalledIds);
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("Tous");
+  const [category, setCategory] = useState("__all__");
 
   useEffect(() => {
     const sync = () => setInstalled(loadInstalledIds());
@@ -30,21 +43,33 @@ export default function AppStoreApp() {
 
   const categories = useMemo(() => {
     const set = new Set(FULL_APP_CATALOG.map((a) => a.category));
-    return ["Tous", ...Array.from(set)];
+    return ["__all__", ...Array.from(set)];
   }, []);
+
+  const localizeApp = (id: string, fallback: string, kind: "name" | "blurb") => {
+    const key = `apps.${id}.${kind}`;
+    const v = t(key);
+    return v.startsWith("apps.") ? fallback : v;
+  };
+
+  const localizeCat = (cat: string) => {
+    if (cat === "__all__") return t("apps.cat.all");
+    const key = CAT_KEY[cat];
+    return key ? t(key) : cat;
+  };
 
   const apps = useMemo(() => {
     return FULL_APP_CATALOG.filter((a) => {
-      if (category !== "Tous" && a.category !== category) return false;
+      if (category !== "__all__" && a.category !== category) return false;
       const q = query.trim().toLowerCase();
       if (!q) return true;
-      return (
-        a.name.toLowerCase().includes(q) ||
-        a.blurb.toLowerCase().includes(q) ||
-        a.category.toLowerCase().includes(q)
-      );
+      const name = localizeApp(a.id, a.name, "name").toLowerCase();
+      const blurb = localizeApp(a.id, a.blurb, "blurb").toLowerCase();
+      const cat = localizeCat(a.category).toLowerCase();
+      return name.includes(q) || blurb.includes(q) || cat.includes(q);
     });
-  }, [query, category]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, category, t]);
 
   const syncDockAfterInstall = (id: string) => {
     const meta = FULL_APP_CATALOG.find((a) => a.id === id);
@@ -68,7 +93,11 @@ export default function AppStoreApp() {
     syncDockAfterInstall(id);
     window.dispatchEvent(
       new CustomEvent("nxg-toast", {
-        detail: { message: `« ${FULL_APP_CATALOG.find((a) => a.id === id)?.name} » installée` },
+        detail: {
+          message: t("toast.installed", {
+            name: localizeApp(id, id, "name"),
+          }),
+        },
       })
     );
   };
@@ -76,12 +105,13 @@ export default function AppStoreApp() {
   const onUninstall = (id: string) => {
     const meta = FULL_APP_CATALOG.find((a) => a.id === id);
     if (!meta || meta.system) return;
-    if (!window.confirm(`Désinstaller ${meta.name} ?`)) return;
+    const name = localizeApp(id, meta.name, "name");
+    if (!window.confirm(`${t("common.uninstall")} ${name}?`)) return;
     setInstalled(uninstallApp(id));
     syncDockAfterUninstall(id);
     window.dispatchEvent(
       new CustomEvent("nxg-toast", {
-        detail: { message: `« ${meta.name} » désinstallée` },
+        detail: { message: t("toast.uninstalled", { name }) },
       })
     );
   };
@@ -111,13 +141,13 @@ export default function AppStoreApp() {
       >
         <header className="store-titlebar">
           <TrafficLights appId="appstore" onClose={closeApp} />
-          <div className="store-title">App Store</div>
+          <div className="store-title">{t("apps.appstore.name")}</div>
         </header>
         <div className="store-toolbar">
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Rechercher une app…"
+            placeholder={t("store.search")}
           />
           <div className="store-cats">
             {categories.map((c) => (
@@ -127,7 +157,7 @@ export default function AppStoreApp() {
                 className={category === c ? "on" : ""}
                 onClick={() => setCategory(c)}
               >
-                {c}
+                {localizeCat(c)}
               </button>
             ))}
           </div>
@@ -143,27 +173,27 @@ export default function AppStoreApp() {
                   draggable={false}
                 />
                 <div className="store-card-meta">
-                  <h3>{app.name}</h3>
-                  <p>{app.blurb}</p>
+                  <h3>{localizeApp(app.id, app.name, "name")}</h3>
+                  <p>{localizeApp(app.id, app.blurb, "blurb")}</p>
                   <div className="store-card-foot">
                     <span>
-                      {app.category} · {app.sizeLabel}
+                      {localizeCat(app.category)} · {app.sizeLabel}
                     </span>
                     {app.system ? (
                       <button type="button" onClick={() => onOpen(app.id)}>
-                        Ouvrir
+                        {t("common.open")}
                       </button>
                     ) : on ? (
                       <div className="store-actions">
                         <button type="button" onClick={() => onOpen(app.id)}>
-                          Ouvrir
+                          {t("common.open")}
                         </button>
                         <button
                           type="button"
                           className="danger"
                           onClick={() => onUninstall(app.id)}
                         >
-                          Retirer
+                          {t("common.uninstall")}
                         </button>
                       </div>
                     ) : (
@@ -172,7 +202,7 @@ export default function AppStoreApp() {
                         className="install"
                         onClick={() => onInstall(app.id)}
                       >
-                        Obtenir
+                        {t("store.get")}
                       </button>
                     )}
                   </div>

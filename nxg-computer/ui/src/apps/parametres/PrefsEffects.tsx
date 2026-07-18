@@ -3,6 +3,7 @@ import { store } from "../../App";
 import { ACCENT_COLORS, AccentId } from "./settingsMeta";
 import updateSysColor from "../../utils/helpers/updateSysColor";
 import { fetchNui, isEnvBrowser } from "../../lib/nui/fetchNui";
+import { isRtl, normalizeLocale, setLocale } from "../../i18n";
 
 function resolveDark(theme: string): boolean {
   if (theme === "light") return false;
@@ -41,6 +42,16 @@ function applyThemeClass(theme: string) {
 export default function PrefsEffects() {
   const [state, dispatch] = useContext(store);
   const prefs = state.settings?.prefs;
+
+  useEffect(() => {
+    if (!prefs) return;
+    const locale = normalizeLocale(prefs.language);
+    setLocale(locale);
+    const root = document.documentElement;
+    root.lang = locale;
+    root.dir = isRtl(locale) ? "rtl" : "ltr";
+    root.classList.toggle("nxg-rtl", isRtl(locale));
+  }, [prefs?.language]);
 
   useEffect(() => {
     if (!prefs) return;

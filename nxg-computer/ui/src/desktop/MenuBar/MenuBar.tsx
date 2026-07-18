@@ -7,32 +7,41 @@ import DropdownMenu from "../DropdownMenu/DropdownMenu";
 import ControlCenter from "../ControlCenter/ControlCenter";
 import { frontAppId } from "./menuActions";
 import getDate from "../../utils/helpers/getDate";
-import { FULL_APP_CATALOG } from "../../apps/registry";
-
-const MENU_ITEMS: { id: string; label: string; bold?: boolean }[] = [
-  { id: "fichiers", label: "Fichiers", bold: true },
-  { id: "file", label: "Fichier" },
-  { id: "edit", label: "Édition" },
-  { id: "view", label: "Présentation" },
-  { id: "go", label: "Aller" },
-  { id: "windows", label: "Fenêtre" },
-  { id: "help", label: "Aide" },
-];
+import { useT } from "../../i18n/useT";
 
 export default function MenuBar() {
   const [state, dispatch] = useContext(store);
+  const t = useT();
   const [toastMsg, setToastMsg] = useState<string | null>(null);
-  const [clock, setClock] = useState(() => getDate());
+  const lang = state.settings?.prefs?.language;
+  const [clock, setClock] = useState(() => getDate(lang));
   const front = frontAppId(state);
   const wifiOn = state.settings.prefs?.wifi !== false;
 
-  const appLabel =
-    FULL_APP_CATALOG.find((a) => a.id === front)?.name || "NXGos";
+  const appLabel = front ? t(`apps.${front}.name`) : "NXGos";
+  if (appLabel.startsWith("apps.")) {
+    /* fallback if unknown app id */
+  }
+  const frontLabel =
+    front && !t(`apps.${front}.name`).startsWith("apps.")
+      ? t(`apps.${front}.name`)
+      : front || "NXGos";
+
+  const menus = [
+    { id: "fichiers", label: frontLabel, bold: true as const },
+    { id: "file", label: t("menubar.file") },
+    { id: "edit", label: t("menubar.edit") },
+    { id: "view", label: t("menubar.view") },
+    { id: "go", label: t("menubar.go") },
+    { id: "windows", label: t("menubar.windows") },
+    { id: "help", label: t("menubar.help") },
+  ];
 
   useEffect(() => {
-    const id = window.setInterval(() => setClock(getDate()), 30000);
+    setClock(getDate(lang));
+    const id = window.setInterval(() => setClock(getDate(lang)), 30000);
     return () => window.clearInterval(id);
-  }, []);
+  }, [lang]);
 
   useEffect(() => {
     const onToast = (e: Event) => {
@@ -70,11 +79,6 @@ export default function MenuBar() {
     }, 40);
   };
 
-  const menus = [
-    { id: "fichiers", label: appLabel, bold: true },
-    ...MENU_ITEMS.slice(1),
-  ];
-
   return (
     <>
       <div className="filter" />
@@ -103,7 +107,7 @@ export default function MenuBar() {
             id={item.id}
             onClick={() => selectSection(item.id)}
           >
-            {item.bold ? appLabel : item.label}
+            {item.label}
             {state.section === item.id ? <DropdownMenu /> : null}
           </div>
         ))}
@@ -113,8 +117,8 @@ export default function MenuBar() {
             <button
               type="button"
               className={`status-icon wifi ${wifiOn ? "is-on" : "is-off"}`}
-              title={wifiOn ? "Wi‑Fi connecté" : "Wi‑Fi désactivé"}
-              aria-label={wifiOn ? "Wi‑Fi connecté" : "Wi‑Fi désactivé"}
+              title={wifiOn ? t("menubar.wifiOn") : t("menubar.wifiOff")}
+              aria-label={wifiOn ? t("menubar.wifiOn") : t("menubar.wifiOff")}
               onClick={openReseau}
             >
               <WifiIcon className="wifi-glyph" />
@@ -126,8 +130,8 @@ export default function MenuBar() {
               }`}
               title={
                 state.settings.prefs?.bluetooth
-                  ? "Bluetooth"
-                  : "Bluetooth désactivé"
+                  ? t("menubar.btOn")
+                  : t("menubar.btOff")
               }
             >
               BT

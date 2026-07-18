@@ -12,6 +12,7 @@ import {
   snapDesktopPosition,
 } from "./dockApps";
 import { isAppInstalled } from "../../apps/registry";
+import { useT } from "../../i18n/useT";
 import "./Dock.scss";
 
 function dockSizeClass(count: number) {
@@ -24,6 +25,7 @@ function dockSizeClass(count: number) {
 
 export default function Dock() {
   const [state, dispatch] = useContext(store);
+  const t = useT();
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [hoverLocked, setHoverLocked] = useState(false);
   const [dockDropHover, setDockDropHover] = useState(false);
@@ -284,7 +286,7 @@ export default function Dock() {
                 transition={{ type: "spring", stiffness: 520, damping: 34 }}
                 style={{ pointerEvents: hideInDock ? "none" : "auto" }}
               >
-                <div className="tool-tip">{item.name}</div>
+                <div className="tool-tip">{t(`apps.${item.id}.name`) !== `apps.${item.id}.name` ? t(`apps.${item.id}.name`) : item.name}</div>
                 <img
                   alt={item.name}
                   className={`dock-icon ${
