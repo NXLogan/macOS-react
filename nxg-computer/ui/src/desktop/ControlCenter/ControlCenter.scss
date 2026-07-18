@@ -1,0 +1,215 @@
+.settings-dropdown {
+  background: var(--nxg-surface-2);
+  backdrop-filter: var(--nxg-blur);
+  border: 1px solid var(--nxg-border-strong);
+  border-radius: var(--nxg-radius-lg);
+  height: 360px;
+  width: 312px;
+  box-sizing: border-box;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  left: -144px;
+  top: 36px;
+  box-shadow: var(--nxg-shadow);
+  transition: 0.35s opacity, 0.35s transform, 0.35s visibility;
+  padding: 12px;
+  gap: 10px;
+  font-family: var(--nxg-font);
+
+  .functions {
+    display: flex;
+    gap: 10px;
+
+    .func {
+      border: 1px solid var(--nxg-border);
+      border-radius: var(--nxg-radius);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--nxg-text);
+      font-family: var(--nxg-font);
+      font-weight: 600;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 16px;
+      cursor: url("../../assets/images/pointing.png"), auto;
+      transition: 0.2s border-color, 0.2s background;
+
+      &:hover {
+        border-color: rgba(200, 245, 66, 0.35);
+        background: var(--nxg-accent-soft);
+      }
+
+      .airdrop-btn {
+        * {
+          margin-bottom: 2px;
+          pointer-events: none;
+        }
+      }
+
+      button {
+        border: none;
+        border-radius: 4px;
+        width: 27px;
+        height: 28px;
+        transition: 0.25s all;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: 8px;
+        cursor: url("../../assets/images/pointing.png"), auto;
+
+        * {
+          height: 17px;
+          width: 17px;
+          pointer-events: none;
+        }
+      }
+    }
+  }
+
+  .sys-colors,
+  .wallpaper-container,
+  .notch-container {
+    border: 1px solid var(--nxg-border);
+    border-radius: var(--nxg-radius);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--nxg-text);
+    font-family: var(--nxg-font);
+    font-weight: 600;
+    padding: 10px 12px 12px;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: start;
+
+    .colors {
+      display: flex;
+      gap: 14px;
+      margin-left: 1px;
+      margin-top: 12px;
+
+      .color {
+        border-radius: 4px;
+        height: 20px;
+        width: 22px;
+        border: 2px solid transparent;
+        cursor: url("../../assets/images/pointing.png"), auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.15s transform;
+
+        &:hover {
+          transform: scale(1.08);
+        }
+      }
+
+      .orangey {
+        background-color: #ff9d0a;
+      }
+      .greeny {
+        background-color: #2ed157;
+      }
+      .babybluey {
+        background-color: #66d4ff;
+      }
+      .bluey {
+        background-color: #c8f542;
+      }
+      .purpley {
+        background-color: #5e5ce6;
+      }
+      .violety {
+        background-color: #bf5af2;
+      }
+      .redy {
+        background-color: #ff3860;
+      }
+    }
+  }
+
+  .wallpaper-container {
+    flex-direction: row;
+    gap: 12px;
+    justify-content: flex-start;
+    padding-top: 12px;
+    padding-bottom: 13px;
+    cursor: url("../../assets/images/pointing.png"), auto;
+
+    * {
+      pointer-events: none;
+    }
+
+    .preview {
+      border: 1px solid var(--nxg-border);
+      border-radius: var(--nxg-radius);
+      height: 72px;
+      width: 72px;
+      object-fit: cover;
+    }
+
+    .desc {
+      padding-top: 3px;
+      padding-left: 3px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      h2 {
+        font-size: 15px;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      h3 {
+        margin-top: 2px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--nxg-muted);
+      }
+    }
+  }
+
+  .notch-container {
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 14px 16px;
+    cursor: url("../../assets/images/pointing.png"), auto;
+
+    button {
+      margin-right: 10px;
+      border: none;
+      border-radius: 4px;
+      width: 27px;
+      height: 28px;
+      transition: 0.25s all;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: url("../../assets/images/pointing.png"), auto;
+
+      * {
+        width: 16px;
+        margin-right: 1px;
+        pointer-events: none;
+      }
+    }
+  }
+}
+
+.settings-open {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+.settings-closed {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  pointer-events: none;
+}

@@ -1,0 +1,295 @@
+.dock-shell {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  top: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  pointer-events: none;
+  z-index: 15;
+  transition: inset 0.25s ease;
+
+  &.dock-pos-bottom {
+    left: 0;
+    right: 0;
+    bottom: 14px;
+    top: auto;
+    flex-direction: row;
+    align-items: flex-end;
+  }
+
+  &.dock-pos-left {
+    left: 14px;
+    right: auto;
+    top: 0;
+    bottom: 0;
+    width: auto;
+    align-items: center;
+    justify-content: center;
+
+    .dock {
+      flex-direction: column;
+      height: max-content !important;
+      width: calc(var(--dock-icon) + 28px);
+      padding: 12px 8px;
+      align-items: center;
+    }
+
+    .dock-item {
+      height: auto;
+    }
+  }
+
+  &.dock-pos-right {
+    right: 14px;
+    left: auto;
+    top: 0;
+    bottom: 0;
+    width: auto;
+    align-items: center;
+    justify-content: center;
+
+    .dock {
+      flex-direction: column;
+      height: max-content !important;
+      width: calc(var(--dock-icon) + 28px);
+      padding: 12px 8px;
+      align-items: center;
+    }
+
+    .dock-item {
+      height: auto;
+    }
+  }
+
+  &.dock-pos-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(24px);
+  }
+
+  &[data-icon-size="small"] .dock {
+    --dock-icon: 2.6rem;
+    --dock-height: 56px;
+  }
+
+  &[data-icon-size="medium"] .dock {
+    --dock-icon: 3.4rem;
+    --dock-height: 68px;
+  }
+
+  &[data-icon-size="large"] .dock {
+    --dock-icon: 4rem;
+    --dock-height: 78px;
+  }
+}
+
+.dock {
+  --dock-icon: 3.4rem;
+  --dock-pad-x: 14px;
+  --dock-pad-b: 8px;
+  --dock-gap: 4px;
+  --dock-height: 68px;
+
+  pointer-events: auto;
+  display: flex;
+  background: var(--nxg-surface);
+  box-shadow: var(--nxg-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  height: var(--dock-height) !important;
+  justify-content: center;
+  gap: var(--dock-gap);
+  align-items: flex-end;
+  border: 1px solid var(--nxg-border-strong);
+  border-radius: var(--nxg-radius-lg);
+  width: max-content;
+  min-width: 0;
+  max-width: calc(100vw - 32px);
+  padding: 0 var(--dock-pad-x) var(--dock-pad-b);
+  margin: 0;
+  position: relative;
+  left: auto;
+  bottom: auto;
+  transform: none;
+  backdrop-filter: var(--nxg-blur);
+  overflow: visible !important;
+  z-index: 15;
+  list-style: none;
+  transition: box-shadow 0.2s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+
+  &.dock-size-xs {
+    --dock-icon: 3.6rem;
+    --dock-pad-x: 18px;
+    --dock-gap: 8px;
+    --dock-height: 72px;
+  }
+
+  &.dock-size-sm {
+    --dock-icon: 3.5rem;
+    --dock-pad-x: 16px;
+    --dock-gap: 6px;
+    --dock-height: 70px;
+  }
+
+  &.dock-size-md {
+    --dock-icon: 3.4rem;
+    --dock-pad-x: 14px;
+    --dock-gap: 4px;
+    --dock-height: 68px;
+  }
+
+  &.dock-size-lg {
+    --dock-icon: 2.95rem;
+    --dock-pad-x: 12px;
+    --dock-gap: 3px;
+    --dock-height: 62px;
+  }
+
+  &.dock-size-xl {
+    --dock-icon: 2.55rem;
+    --dock-pad-x: 10px;
+    --dock-gap: 2px;
+    --dock-height: 56px;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 12%;
+    right: 12%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--nxg-accent),
+      transparent
+    );
+    opacity: 0.45;
+    pointer-events: none;
+  }
+
+  &.is-dragging {
+    .tool-tip {
+      opacity: 0 !important;
+      visibility: hidden !important;
+    }
+  }
+
+  &.dock-drop-hover {
+    box-shadow: var(--nxg-shadow), 0 0 0 2px rgba(10, 132, 255, 0.65),
+      0 0 28px rgba(10, 132, 255, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    transform: scale(1.04);
+  }
+
+  .finder {
+    margin-right: 1px;
+  }
+
+  .dock-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: calc(var(--dock-icon) + 8px);
+    margin: 0;
+    position: relative;
+    cursor: grab;
+    list-style: none;
+    flex-shrink: 0;
+    z-index: 1;
+
+    &:active {
+      cursor: grabbing;
+    }
+
+    .tool-tip {
+      position: absolute;
+      top: -38px;
+      border-radius: var(--nxg-radius);
+      background: var(--nxg-elevated);
+      color: var(--nxg-text);
+      font-family: var(--nxg-font);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 10px;
+      border: 1px solid var(--nxg-border-strong);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      transition: 0.15s opacity;
+      opacity: 0;
+      visibility: hidden;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+  }
+
+  .is-dragging-item {
+    z-index: 80 !important;
+    cursor: grabbing !important;
+
+    .dock-icon {
+      filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.55))
+        drop-shadow(0 0 12px rgba(200, 245, 66, 0.3));
+    }
+  }
+
+  .dock-icon {
+    height: var(--dock-icon);
+    width: var(--dock-icon);
+    object-fit: contain;
+    pointer-events: none;
+    transform-origin: bottom center;
+    transition: transform 0.175s ease-in-out;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+
+  &:not(.is-dragging) {
+    .dock-item.hovered {
+      .tool-tip {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .dock-icon {
+        transform: scale(1.55);
+      }
+    }
+
+    .dock-item.distance-1 .dock-icon {
+      transform: scale(1.28);
+    }
+
+    .dock-item.distance-2 .dock-icon {
+      transform: scale(1.12);
+    }
+  }
+}
+
+.dock-fly-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  pointer-events: none;
+  z-index: 90;
+  filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.5));
+}
+
+.point {
+  height: 4px;
+  width: 4px;
+  border-radius: 2px;
+  background-color: var(--nxg-accent);
+  justify-self: center;
+  margin-right: 2px;
+  box-shadow: 0 0 8px rgba(200, 245, 66, 0.55);
+}

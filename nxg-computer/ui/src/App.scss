@@ -1,0 +1,21 @@
+/* Global NXG OS chrome — animations unchanged */
+
+.page {
+  isolation: isolate;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 55% at 50% -10%, rgba(200, 245, 66, 0.07), transparent 55%),
+      radial-gradient(ellipse 70% 50% at 50% 120%, rgba(0, 0, 0, 0.5), transparent 60%),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.32) 0%, transparent 16%, transparent 78%, rgba(0, 0, 0, 0.55) 100%);
+  }
+}
+
+.filter {
+  display: none;
+}

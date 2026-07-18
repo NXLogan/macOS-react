@@ -1,0 +1,97 @@
+@keyframes load {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.bootup-window {
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 35%, rgba(200, 245, 66, 0.08), transparent 70%),
+    #050607;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: 1s all;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 90;
+  align-items: center;
+  justify-content: center;
+}
+
+.boot {
+  transition: 1s opacity;
+  cursor: none;
+  animation: 0.35s ease-out 0s 1 load !important;
+
+  .logo {
+    height: 96px;
+    width: 160px;
+    object-fit: contain;
+    -webkit-user-drag: none;
+    pointer-events: none;
+    margin: 0;
+  }
+
+  .boot-brand {
+    margin-top: 18px;
+    font-family: var(--nxg-font);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--nxg-muted);
+  }
+
+  .bar-container {
+    margin-top: 28px;
+    padding: 0;
+    position: relative;
+
+    .bar-background {
+      margin: 0;
+      background-color: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--nxg-border);
+      border-radius: 2px;
+      width: 168px;
+      height: 3px;
+    }
+
+    .bar {
+      position: absolute;
+      height: 3px;
+      width: 0px;
+      border-radius: 2px;
+      border: none;
+      top: 1px;
+      left: 1px;
+      background: linear-gradient(90deg, #9bc428, var(--nxg-accent));
+      box-shadow: 0 0 12px rgba(200, 245, 66, 0.45);
+    }
+  }
+}
+
+.vanished {
+  opacity: 0;
+  z-index: 90;
+  background-color: #050607;
+  width: 100vw;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  display: flex;
+  transition: 1s all;
+  cursor: none;
+
+  .logo,
+  .boot-brand,
+  .bar-container {
+    visibility: hidden;
+  }
+}

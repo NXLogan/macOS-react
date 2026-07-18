@@ -1,0 +1,70 @@
+:root {
+  /* NXG OS — cinematic dark RP terminal */
+  --nxg-bg: #070809;
+  --nxg-surface: rgba(14, 16, 20, 0.78);
+  --nxg-surface-2: rgba(22, 25, 32, 0.88);
+  --nxg-elevated: #161920;
+  --nxg-border: rgba(255, 255, 255, 0.09);
+  --nxg-border-strong: rgba(255, 255, 255, 0.16);
+  --nxg-text: #f4f5f7;
+  --nxg-muted: #8a909b;
+  --nxg-accent: #c8f542;
+  --nxg-accent-soft: rgba(200, 245, 66, 0.14);
+  --nxg-danger: #ff4d6a;
+  --nxg-warning: #ffb020;
+  --nxg-ok: #3dde8c;
+  --nxg-radius: 6px;
+  --nxg-radius-lg: 12px;
+  --nxg-blur: blur(22px) saturate(1.15);
+  --nxg-font: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --nxg-mono: "JetBrains Mono", ui-monospace, monospace;
+  --nxg-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+  --user-color: #c8f542;
+}
+
+body {
+  margin: 0;
+  font-family: var(--nxg-font);
+  color: var(--nxg-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  cursor: url("./assets/images/cursor.png"), auto;
+  overflow-x: hidden;
+  overflow-y: hidden !important;
+  background: var(--nxg-bg);
+}
+
+code {
+  font-family: var(--nxg-mono);
+}
+
+/* Legacy SF aliases → NXG stack (keeps existing class hooks) */
+@font-face {
+  font-family: "SF Regular";
+  src: local("Space Grotesk"), local("SpaceGrotesk-Regular");
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "SF Medium";
+  src: local("Space Grotesk"), local("SpaceGrotesk-Medium");
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: "SF Semibold";
+  src: local("Space Grotesk"), local("SpaceGrotesk-SemiBold");
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: "SF Bold";
+  src: local("Space Grotesk"), local("SpaceGrotesk-Bold");
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "SF Light";
+  src: local("Space Grotesk"), local("SpaceGrotesk-Light");
+  font-weight: 300;
+}

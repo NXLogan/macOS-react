@@ -1,0 +1,47 @@
+.desktop-widgets {
+  position: absolute;
+  top: 56px;
+  right: 28px;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.desktop-widget {
+  width: 200px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: rgba(20, 22, 28, 0.55);
+  backdrop-filter: blur(18px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-family: var(--nxg-font);
+
+  &.weather {
+    .dw-city {
+      font-size: 13px;
+      opacity: 0.85;
+      font-weight: 500;
+    }
+
+    .dw-temp {
+      font-size: 42px;
+      font-weight: 600;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin: 4px 0;
+    }
+
+    .dw-cond {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .dw-meta {
+      margin-top: 10px;
+      font-size: 11px;
+      opacity: 0.7;
+      text-transform: capitalize;
+    }
+  }
+}

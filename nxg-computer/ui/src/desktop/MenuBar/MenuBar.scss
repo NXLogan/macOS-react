@@ -1,0 +1,141 @@
+.nav-bar {
+  width: 100vw;
+  height: 34px;
+  z-index: 12;
+  position: absolute;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 0 4px 0 0;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 12, 16, 0.92) 0%,
+    rgba(10, 12, 16, 0.72) 100%
+  );
+  backdrop-filter: var(--nxg-blur);
+  border-bottom: 1px solid var(--nxg-border);
+  box-shadow: 0 1px 0 rgba(200, 245, 66, 0.12);
+  font-family: var(--nxg-font);
+  letter-spacing: 0.01em;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--nxg-accent) 20%,
+      var(--nxg-accent) 80%,
+      transparent 100%
+    );
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  .right {
+    display: flex;
+    align-items: center;
+    font-size: 0.78em;
+    font-family: var(--nxg-mono);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    position: absolute;
+    right: 12px;
+    top: 0;
+    height: 100%;
+    color: var(--nxg-text);
+
+    h3 {
+      color: var(--nxg-text);
+      font-weight: 500;
+      font-size: 11px;
+      margin: 0;
+      line-height: 1;
+    }
+
+    .date {
+      margin-right: 12px;
+      color: var(--nxg-muted);
+    }
+
+    .setting {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .settings {
+      height: 28px;
+      width: 28px;
+      fill: var(--nxg-text);
+      padding: 6px;
+      margin-right: 10px;
+      border-radius: var(--nxg-radius);
+      transition: 0.2s background, 0.2s fill;
+      cursor: url("../../assets/images/pointing.png"), auto;
+
+      &:hover {
+        background: var(--nxg-accent-soft);
+        fill: var(--nxg-accent);
+      }
+
+      path {
+        pointer-events: none;
+      }
+    }
+  }
+}
+
+.section {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  padding: 0 10px;
+  margin: 0 1px;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1;
+  border: 1px solid transparent;
+  border-radius: var(--nxg-radius);
+  font-family: var(--nxg-font);
+  color: var(--nxg-text);
+  cursor: url("../../assets/images/pointing.png"), auto;
+  position: relative;
+  transition: 0.15s background, 0.15s border-color;
+  box-sizing: border-box;
+}
+
+.section:hover:not(.is-selected) {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.section.is-selected {
+  background: var(--nxg-accent-soft);
+  border-color: rgba(200, 245, 66, 0.28);
+  color: var(--nxg-text);
+}
+
+.finder {
+  font-weight: 600;
+}
+
+.logo {
+  margin-left: 8px;
+  padding: 0 10px;
+  height: 24px;
+}
+
+.apple {
+  height: 15px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
