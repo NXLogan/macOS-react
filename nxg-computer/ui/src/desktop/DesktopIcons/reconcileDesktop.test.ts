@@ -57,7 +57,7 @@ describe("reconcileDesktopFolders", () => {
       {
         id: `desktop-folder-${folder.id}`,
         name: "Old",
-        icon: "fichiers.png",
+        icon: "finder.png",
         kind: "folder",
         folderId: folder.id,
         x: 40,
@@ -75,7 +75,7 @@ describe("reconcileDesktopFolders", () => {
       {
         id: `desktop-folder-${folder.id}`,
         name: "Gone",
-        icon: "fichiers.png",
+        icon: "finder.png",
         kind: "folder",
         folderId: folder.id,
         x: 40,

@@ -52,7 +52,9 @@
     width: 56px;
     height: 56px;
     object-fit: contain;
-    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35));
+    background: transparent;
+    border-radius: 12px;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.28));
     pointer-events: none;
     -webkit-user-drag: none;
   }
@@ -68,14 +70,25 @@
     word-break: break-word;
     padding: 1px 4px;
     border-radius: 4px;
+    background: transparent;
   }
 
   &.selected {
-    background: rgba(10, 132, 255, 0.22);
+    background: rgba(10, 132, 255, 0.18);
 
     .desktop-icon-label {
-      background: rgba(10, 132, 255, 0.85);
+      background: rgba(10, 132, 255, 0.9);
       text-shadow: none;
     }
+  }
+
+  &:focus,
+  &:focus-visible {
+    outline: none;
+  }
+
+  /* Don't keep browser focus ring looking like permanent selection */
+  &:focus:not(.selected) {
+    background: transparent;
   }
 }

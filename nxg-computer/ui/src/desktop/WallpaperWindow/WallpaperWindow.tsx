@@ -1,13 +1,8 @@
-import React, { useContext, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import Draggable from "react-draggable";
 import { store } from "../../App";
 import "./WallpaperWindow.scss";
-import { ReactComponent as Close } from "../../assets/images/svg/close.svg";
-import { ReactComponent as Minimize } from "../../assets/images/svg/minimize.svg";
-import { ReactComponent as Stretch } from "../../assets/images/svg/stretch.svg";
 import wallpapers from "../../utils/helpers/wallpapers";
-import toggleWallpaperVis from "../../utils/helpers/toggleWallpaperVis";
-import toggleWallpaperMin from "../../utils/helpers/toggleWallpaperMin";
 import wallpaperObjectType from "../../store/types/wallpaperObjectType";
 import returnColor from "../../utils/helpers/returnColor";
 import toggleBorder from "../../utils/helpers/toggleBorder";
@@ -20,6 +15,7 @@ import {
 
 export default function WallpaperWindow() {
   const [state, dispatch] = useContext(store);
+  const nodeRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,11 +23,31 @@ export default function WallpaperWindow() {
   const wallpaper = state.settings.wallpaper;
   const isCustom = Boolean(wallpaper.custom);
 
+  useEffect(() => {
+    if (!wallpaper.open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        dispatch({ type: "wallpaper/CLOSE" });
+      }
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [wallpaper.open, dispatch]);
+
+  if (!wallpaper.open) return null;
+
   const currentPreview = isCustom
     ? wallpaper.src || wallpaper.preview
     : wallpaper.surname === "catalina"
     ? require("../../assets/images/catalina_day.jpg")
     : resolveBundledWallpaper(wallpaper.surname);
+
+  const closeWindow = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    e?.preventDefault();
+    dispatch({ type: "wallpaper/CLOSE" });
+  };
 
   const changeWallpaper = (item: wallpaperObjectType) => {
     setError(null);
@@ -91,109 +107,119 @@ export default function WallpaperWindow() {
 
   return (
     <Draggable
-      handle="#wallpaper-handle"
-      onStart={(e: any) => {
-        if (e.target.id !== "wallpaper-handle") {
-          return false;
-        }
-      }}
+      nodeRef={nodeRef}
+      handle=".wallpaper-handle"
+      cancel="button,input,.wp-dot"
+      bounds="parent"
+      defaultPosition={{ x: 180, y: 80 }}
     >
-      {wallpaper.open ? (
-        <div className="wallpaper-menu wallp" id="wallpaper-menu">
-          <section className="handle" id="wallpaper-handle">
-            <div className="dots">
-              <div className="dot red" onClick={toggleWallpaperVis}>
-                <Close className="close" />
-              </div>
-              <div className="dot yellow" onClick={toggleWallpaperMin}>
-                <Minimize className="minimize" />
-              </div>
-              <div className="dot green">
-                <Stretch className="stretch" />
-              </div>
-            </div>
-            Fond d&apos;écran
-          </section>
+      <div
+        ref={nodeRef}
+        className="wallpaper-menu wallp"
+        id="wallpaper-menu"
+      >
+        <header className="wallpaper-handle">
+          <div className="wp-traffic" role="toolbar" aria-label="Fenêtre">
+            <button
+              type="button"
+              className="wp-dot red"
+              aria-label="Fermer"
+              onClick={closeWindow}
+              onPointerDown={(e) => e.stopPropagation()}
+            />
+            <button
+              type="button"
+              className="wp-dot yellow"
+              aria-label="Réduire"
+              onClick={closeWindow}
+              onPointerDown={(e) => e.stopPropagation()}
+            />
+            <button
+              type="button"
+              className="wp-dot green"
+              aria-label="Plein écran"
+              onPointerDown={(e) => e.stopPropagation()}
+            />
+          </div>
+          <span className="wallpaper-title">Fond d&apos;écran</span>
+        </header>
 
-          <section className="selection">
-            <div className="prev">
-              <img
-                alt="Fond d'écran actuel"
-                className="current"
-                src={currentPreview}
+        <section className="selection">
+          <div className="prev">
+            <img
+              alt="Fond d'écran actuel"
+              className="current"
+              src={currentPreview}
+            />
+            <h1>{wallpaper.name}</h1>
+            <h2>{isCustom ? "Fond personnalisé" : "Fond dynamique"}</h2>
+
+            <div className="custom-import">
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={onCustomFile}
               />
-              <h1>{wallpaper.name}</h1>
-              <h2>{isCustom ? "Fond personnalisé" : "Fond dynamique"}</h2>
-
-              <div className="custom-import">
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={onCustomFile}
-                />
-                <button
-                  type="button"
-                  className="custom-import-btn"
-                  onClick={onPickCustom}
-                  disabled={importing}
-                >
-                  {importing ? "Import…" : "Importer une image…"}
-                </button>
-                {error ? <p className="custom-import-error">{error}</p> : null}
-              </div>
+              <button
+                type="button"
+                className="custom-import-btn"
+                onClick={onPickCustom}
+                disabled={importing}
+              >
+                {importing ? "Import…" : "Importer une image…"}
+              </button>
+              {error ? <p className="custom-import-error">{error}</p> : null}
             </div>
+          </div>
 
-            <div className="wallpaper-selector">
-              <h1>Fonds d&apos;écran</h1>
+          <div className="wallpaper-selector">
+            <h1>Fonds d&apos;écran</h1>
 
-              <div className="grid">
-                {isCustom && wallpaper.src ? (
-                  <div className="item-container">
-                    <img
-                      alt="Personnalisé"
-                      className="image-wrapper is-selected"
-                      src={wallpaper.src}
-                      style={{
-                        borderColor: returnColor(state.settings.color),
-                      }}
-                    />
-                    <h2>Personnalisé</h2>
-                  </div>
-                ) : null}
+            <div className="grid">
+              {isCustom && wallpaper.src ? (
+                <div className="item-container">
+                  <img
+                    alt="Personnalisé"
+                    className="image-wrapper is-selected"
+                    src={wallpaper.src}
+                    style={{
+                      borderColor: returnColor(state.settings.color),
+                    }}
+                  />
+                  <h2>Personnalisé</h2>
+                </div>
+              ) : null}
 
-                {wallpapers.map(
-                  (wallpaperObject: wallpaperObjectType, i: number) => {
-                    const selected =
-                      !isCustom && wallpaper.surname === wallpaperObject.surname;
-                    return (
-                      <div className="item-container" key={i}>
-                        <img
-                          alt={wallpaperObject.name}
-                          className={`image-wrapper${
-                            selected ? " is-selected" : ""
-                          }`}
-                          onMouseEnter={toggleBorder}
-                          onMouseLeave={toggleBorder}
-                          src={resolveBundledPreview(wallpaperObject.surname)}
-                          onClick={() => changeWallpaper(wallpaperObject)}
-                          style={{
-                            borderColor: returnColor(state.settings.color),
-                          }}
-                        />
-                        <h2>{wallpaperObject.name}</h2>
-                      </div>
-                    );
-                  }
-                )}
-              </div>
+              {wallpapers.map(
+                (wallpaperObject: wallpaperObjectType, i: number) => {
+                  const selected =
+                    !isCustom && wallpaper.surname === wallpaperObject.surname;
+                  return (
+                    <div className="item-container" key={i}>
+                      <img
+                        alt={wallpaperObject.name}
+                        className={`image-wrapper${
+                          selected ? " is-selected" : ""
+                        }`}
+                        onMouseEnter={toggleBorder}
+                        onMouseLeave={toggleBorder}
+                        src={resolveBundledPreview(wallpaperObject.surname)}
+                        onClick={() => changeWallpaper(wallpaperObject)}
+                        style={{
+                          borderColor: returnColor(state.settings.color),
+                        }}
+                      />
+                      <h2>{wallpaperObject.name}</h2>
+                    </div>
+                  );
+                }
+              )}
             </div>
-          </section>
-        </div>
-      ) : (
-        <div />
-      )}
+          </div>
+        </section>
+      </div>
     </Draggable>
   );
 }

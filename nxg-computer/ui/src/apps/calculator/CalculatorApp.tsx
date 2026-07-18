@@ -1,162 +1,139 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useReducer } from "react";
 import { store } from "../../App";
 import TrafficLights from "../../desktop/WindowChrome/TrafficLights";
 import AppWindowShell from "../../desktop/WindowChrome/AppWindowShell";
 import {
-  applyOp,
-  CalcOp,
-  formatDisplay,
-  parseLocale,
-} from "./calculatorMath";
+  CalcState,
+  createCalcState,
+  inputBack,
+  inputClear,
+  inputDigit,
+  inputDot,
+  inputEquals,
+  inputNeg,
+  inputOp,
+  inputPercent,
+} from "./calcEngine";
+import { CalcOp } from "./calculatorMath";
 import "./CalculatorApp.scss";
 
-type Op = CalcOp;
+type Action =
+  | { type: "digit"; d: string }
+  | { type: "dot" }
+  | { type: "op"; op: CalcOp }
+  | { type: "equals" }
+  | { type: "clear" }
+  | { type: "neg" }
+  | { type: "percent" }
+  | { type: "back" }
+  | { type: "clear-entry" };
+
+function reducer(state: CalcState, action: Action): CalcState {
+  switch (action.type) {
+    case "digit":
+      return inputDigit(state, action.d);
+    case "dot":
+      return inputDot(state);
+    case "op":
+      return inputOp(state, action.op);
+    case "equals":
+      return inputEquals(state);
+    case "clear":
+      return inputClear();
+    case "neg":
+      return inputNeg(state);
+    case "percent":
+      return inputPercent(state);
+    case "back":
+      return inputBack(state);
+    case "clear-entry":
+      return { ...state, display: "0", fresh: true };
+    default:
+      return state;
+  }
+}
 
 export default function CalculatorApp() {
-  const [state, dispatch] = useContext(store);
-  const open = Boolean(state.openApps?.calculator);
+  const [appState, dispatchApp] = useContext(store);
+  const open = Boolean(appState.openApps?.calculator);
+  const minimized = Boolean(appState.windowChrome?.calculator?.minimized);
+  const [calc, dispatch] = useReducer(reducer, undefined, createCalcState);
 
-  const [display, setDisplay] = useState("0");
-  const [expr, setExpr] = useState("");
-  const [acc, setAcc] = useState<number | null>(null);
-  const [op, setOp] = useState<Op>(null);
-  const [fresh, setFresh] = useState(true);
-
-  const pressDigit = useCallback(
-    (d: string) => {
-      setDisplay((prev) => {
-        if (fresh || prev === "0" || prev === "Erreur") return d;
-        if (prev.replace(",", "").replace("-", "").length >= 12) return prev;
-        return prev + d;
-      });
-      setFresh(false);
-    },
-    [fresh]
-  );
-
-  const pressDot = useCallback(() => {
-    setDisplay((prev) => {
-      if (fresh || prev === "Erreur") return "0,";
-      if (prev.includes(",")) return prev;
-      return `${prev},`;
-    });
-    setFresh(false);
-  }, [fresh]);
-
-  const applyOperator = (a: number, b: number, operator: Op): number =>
-    applyOp(a, b, operator);
-
-  const pressOp = useCallback(
-    (next: Op) => {
-      const cur = parseLocale(display);
-      if (acc !== null && op && !fresh) {
-        const result = applyOperator(acc, cur, op);
-        setAcc(result);
-        setDisplay(formatDisplay(result));
-        setExpr(`${formatDisplay(result)}${next}`);
-      } else {
-        setAcc(cur);
-        setExpr(`${formatDisplay(cur)}${next}`);
-      }
-      setOp(next);
-      setFresh(true);
-    },
-    [acc, display, fresh, op]
-  );
-
-  const pressEquals = useCallback(() => {
-    if (acc === null || !op) return;
-    const cur = parseLocale(display);
-    const result = applyOperator(acc, cur, op);
-    setExpr(`${formatDisplay(acc)}${op}${formatDisplay(cur)}`);
-    setDisplay(formatDisplay(result));
-    setAcc(null);
-    setOp(null);
-    setFresh(true);
-  }, [acc, display, op]);
-
-  const pressClear = useCallback(() => {
-    setDisplay("0");
-    setExpr("");
-    setAcc(null);
-    setOp(null);
-    setFresh(true);
-  }, []);
-
-  const pressNeg = useCallback(() => {
-    setDisplay((prev) => {
-      if (prev === "0" || prev === "Erreur") return prev;
-      if (prev.startsWith("-")) return prev.slice(1);
-      return `-${prev}`;
-    });
-    setFresh(false);
-  }, []);
-
-  const pressPercent = useCallback(() => {
-    setDisplay((prev) => formatDisplay(parseLocale(prev) / 100));
-    setFresh(true);
-  }, []);
-
-  const pressBack = useCallback(() => {
-    setDisplay((prev) => {
-      if (prev.length <= 1 || prev === "Erreur") return "0";
-      return prev.slice(0, -1);
-    });
-  }, []);
+  const focusCalc = useCallback(() => {
+    dispatchApp({ type: "onTop/SET", payload: "calculator" });
+  }, [dispatchApp]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || minimized) return;
     const onKey = (e: KeyboardEvent) => {
-      if (state.onTop !== "calculator") return;
+      if (appState.onTop !== "calculator") return;
       const k = e.key;
-      if (k >= "0" && k <= "9") pressDigit(k);
-      else if (k === "." || k === ",") pressDot();
-      else if (k === "+") pressOp("+");
-      else if (k === "-") pressOp("-");
-      else if (k === "*" || k === "x") pressOp("×");
-      else if (k === "/") pressOp("÷");
-      else if (k === "Enter" || k === "=") {
+      if (k >= "0" && k <= "9") {
         e.preventDefault();
-        pressEquals();
-      } else if (k === "Escape") pressClear();
-      else if (k === "Backspace") pressBack();
-      else if (k === "%") pressPercent();
+        dispatch({ type: "digit", d: k });
+      } else if (k === "." || k === ",") {
+        e.preventDefault();
+        dispatch({ type: "dot" });
+      } else if (k === "+") {
+        e.preventDefault();
+        dispatch({ type: "op", op: "+" });
+      } else if (k === "-") {
+        e.preventDefault();
+        dispatch({ type: "op", op: "-" });
+      } else if (k === "*" || k === "x" || k === "X") {
+        e.preventDefault();
+        dispatch({ type: "op", op: "×" });
+      } else if (k === "/") {
+        e.preventDefault();
+        dispatch({ type: "op", op: "÷" });
+      } else if (k === "Enter" || k === "=") {
+        e.preventDefault();
+        dispatch({ type: "equals" });
+      } else if (k === "Escape") {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        dispatch({ type: "clear" });
+      } else if (k === "Backspace") {
+        e.preventDefault();
+        dispatch({ type: "back" });
+      } else if (k === "%") {
+        e.preventDefault();
+        dispatch({ type: "percent" });
+      }
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [
-    open,
-    state.onTop,
-    pressDigit,
-    pressDot,
-    pressOp,
-    pressEquals,
-    pressClear,
-    pressBack,
-    pressPercent,
-  ]);
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [open, minimized, appState.onTop]);
 
   if (!open) return null;
 
   const closeApp = () => {
-    dispatch({ type: "apps/CLOSE", payload: "calculator" });
+    dispatchApp({ type: "apps/CLOSE", payload: "calculator" });
   };
 
-  const clearLabel = display === "0" && !op && acc === null ? "AC" : "C";
+  const clearLabel =
+    calc.display === "0" && !calc.op && calc.acc === null ? "AC" : "C";
+
+  const press = (action: Action) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    focusCalc();
+    dispatch(action);
+  };
 
   const Btn = ({
     label,
     kind,
-    onClick,
+    action,
   }: {
     label: React.ReactNode;
     kind: "fn" | "num" | "op";
-    onClick: () => void;
+    action: Action;
   }) => (
     <button
       type="button"
       className={`calc-btn calc-${kind}`}
-      onClick={onClick}
+      onClick={press(action)}
     >
       {label}
     </button>
@@ -170,59 +147,53 @@ export default function CalculatorApp() {
       windowClassName="calculator-window"
       windowId="calculator-window"
     >
-      <div
-        className="calculator-hit"
-        onMouseDown={() =>
-          dispatch({ type: "onTop/SET", payload: "calculator" })
-        }
-      >
+      <div className="calculator-hit" onMouseDown={() => focusCalc()}>
         <header className="calc-titlebar">
           <TrafficLights appId="calculator" onClose={closeApp} />
         </header>
 
         <div className="calc-display">
-          <div className="calc-expr">{expr || "\u00A0"}</div>
-          <div className="calc-value">{display}</div>
+          <div className="calc-expr">{calc.expr || "\u00A0"}</div>
+          <div className="calc-value">{calc.display}</div>
         </div>
 
         <div className="calc-pad">
           <Btn
             label={clearLabel}
             kind="fn"
-            onClick={() => {
-              if (clearLabel === "C" && !fresh) {
-                setDisplay("0");
-                setFresh(true);
-              } else pressClear();
-            }}
+            action={
+              clearLabel === "C" && !calc.fresh
+                ? { type: "clear-entry" }
+                : { type: "clear" }
+            }
           />
-          <Btn label="+/−" kind="fn" onClick={pressNeg} />
-          <Btn label="%" kind="fn" onClick={pressPercent} />
-          <Btn label="÷" kind="op" onClick={() => pressOp("÷")} />
+          <Btn label="+/−" kind="fn" action={{ type: "neg" }} />
+          <Btn label="%" kind="fn" action={{ type: "percent" }} />
+          <Btn label="÷" kind="op" action={{ type: "op", op: "÷" }} />
 
-          <Btn label="7" kind="num" onClick={() => pressDigit("7")} />
-          <Btn label="8" kind="num" onClick={() => pressDigit("8")} />
-          <Btn label="9" kind="num" onClick={() => pressDigit("9")} />
-          <Btn label="×" kind="op" onClick={() => pressOp("×")} />
+          <Btn label="7" kind="num" action={{ type: "digit", d: "7" }} />
+          <Btn label="8" kind="num" action={{ type: "digit", d: "8" }} />
+          <Btn label="9" kind="num" action={{ type: "digit", d: "9" }} />
+          <Btn label="×" kind="op" action={{ type: "op", op: "×" }} />
 
-          <Btn label="4" kind="num" onClick={() => pressDigit("4")} />
-          <Btn label="5" kind="num" onClick={() => pressDigit("5")} />
-          <Btn label="6" kind="num" onClick={() => pressDigit("6")} />
-          <Btn label="−" kind="op" onClick={() => pressOp("-")} />
+          <Btn label="4" kind="num" action={{ type: "digit", d: "4" }} />
+          <Btn label="5" kind="num" action={{ type: "digit", d: "5" }} />
+          <Btn label="6" kind="num" action={{ type: "digit", d: "6" }} />
+          <Btn label="−" kind="op" action={{ type: "op", op: "-" }} />
 
-          <Btn label="1" kind="num" onClick={() => pressDigit("1")} />
-          <Btn label="2" kind="num" onClick={() => pressDigit("2")} />
-          <Btn label="3" kind="num" onClick={() => pressDigit("3")} />
-          <Btn label="+" kind="op" onClick={() => pressOp("+")} />
+          <Btn label="1" kind="num" action={{ type: "digit", d: "1" }} />
+          <Btn label="2" kind="num" action={{ type: "digit", d: "2" }} />
+          <Btn label="3" kind="num" action={{ type: "digit", d: "3" }} />
+          <Btn label="+" kind="op" action={{ type: "op", op: "+" }} />
 
           <Btn
             label={<span className="calc-grid-ico" aria-hidden />}
             kind="num"
-            onClick={pressClear}
+            action={{ type: "clear" }}
           />
-          <Btn label="0" kind="num" onClick={() => pressDigit("0")} />
-          <Btn label="," kind="num" onClick={pressDot} />
-          <Btn label="=" kind="op" onClick={pressEquals} />
+          <Btn label="0" kind="num" action={{ type: "digit", d: "0" }} />
+          <Btn label="," kind="num" action={{ type: "dot" }} />
+          <Btn label="=" kind="op" action={{ type: "equals" }} />
         </div>
       </div>
     </AppWindowShell>

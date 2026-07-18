@@ -115,6 +115,7 @@ export default function AppWindowShell({
     <Draggable
       nodeRef={nodeRef}
       handle={handle}
+      cancel="button,input,textarea,a,.calc-btn,.nxg-traffic"
       bounds="parent"
       defaultPosition={defaultPosition}
       disabled={maximized || minimized || closing}

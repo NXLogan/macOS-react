@@ -5,7 +5,6 @@ import { ReactComponent as Animations } from "../../assets/images/svg/animations
 import { ReactComponent as Airdrop } from "../../assets/images/svg/airdrop.svg";
 import { ReactComponent as Tick } from "../../assets/images/svg/tick.svg";
 import { ReactComponent as Notch } from "../../assets/images/svg/notch.svg";
-import toggleWallpaperVis from "../../utils/helpers/toggleWallpaperVis";
 import { resolveBundledPreview } from "../../utils/helpers/applyWallpaper";
 import returnColor, {
   normalizeAccentId,
@@ -56,11 +55,9 @@ export default function ControlCenter() {
     dispatch({ type: "settings/NOTCH" });
   };
 
-  const openWallpaperWindow = (e: React.MouseEvent) => {
-    if (state.settings.wallpaper.open) {
-      toggleWallpaperVis(e);
-    }
-    dispatch({ type: "wallpaper/TOGGLE" });
+  const openWallpaperWindow = () => {
+    dispatch({ type: "wallpaper/OPEN" });
+    dispatch({ type: "settings/CLOSE" });
   };
 
   const openParametres = (section?: string) => {

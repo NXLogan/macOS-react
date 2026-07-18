@@ -64,9 +64,11 @@
       color: var(--nxg-muted);
     }
 
-    .status-pills {
+    .status-pills,
+    .status-icons {
       display: flex;
-      gap: 4px;
+      align-items: center;
+      gap: 6px;
       margin-right: 10px;
     }
 
@@ -90,6 +92,52 @@
     .status-pill.is-off {
       color: var(--nxg-muted);
       opacity: 0.45;
+    }
+
+    .status-icon {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      border: none;
+      border-radius: var(--nxg-radius);
+      background: transparent;
+      color: var(--nxg-text);
+      cursor: url("../../assets/images/pointing.png"), auto;
+      transition: 0.15s background, 0.15s color, 0.15s opacity;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+    }
+
+    .status-icon.wifi .wifi-glyph {
+      width: 15px;
+      height: 15px;
+      display: block;
+    }
+
+    .status-icon.wifi.is-on {
+      color: var(--nxg-text);
+      opacity: 1;
+    }
+
+    .status-icon.wifi.is-off {
+      color: var(--nxg-muted);
+      opacity: 0.4;
+    }
+
+    .status-icon.wifi .wifi-slash {
+      position: absolute;
+      width: 15px;
+      height: 1.5px;
+      background: currentColor;
+      border-radius: 1px;
+      transform: rotate(-42deg);
+      pointer-events: none;
     }
 
     .setting {

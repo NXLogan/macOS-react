@@ -102,7 +102,7 @@ export function loadDesktopIcons(): DesktopIcon[] {
           return {
             id: icon.id,
             name: icon.name || "Sans titre",
-            icon: icon.icon || "fichiers.png",
+            icon: icon.icon || "finder.png",
             x: typeof icon.x === "number" ? icon.x : 40,
             y: typeof icon.y === "number" ? icon.y : 80,
             kind: "folder",

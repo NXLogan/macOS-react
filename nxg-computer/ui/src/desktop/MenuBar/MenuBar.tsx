@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { store } from "../../App";
 import "./MenuBar.scss";
 import { ReactComponent as Settings } from "../../assets/images/svg/settings.svg";
+import { ReactComponent as WifiIcon } from "../../assets/images/svg/wifi.svg";
 import DropdownMenu from "../DropdownMenu/DropdownMenu";
 import ControlCenter from "../ControlCenter/ControlCenter";
 import { frontAppId } from "./menuActions";
@@ -22,6 +23,7 @@ export default function MenuBar() {
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [clock, setClock] = useState(() => getDate());
   const front = frontAppId(state);
+  const wifiOn = state.settings.prefs?.wifi !== false;
 
   const appLabel =
     front === "parametres"
@@ -62,6 +64,15 @@ export default function MenuBar() {
     }
   };
 
+  const openReseau = () => {
+    dispatch({ type: "apps/OPEN", payload: "parametres" });
+    window.setTimeout(() => {
+      window.dispatchEvent(
+        new CustomEvent("nxg-parametres-section", { detail: "reseau" })
+      );
+    }, 40);
+  };
+
   return (
     <>
       <div className="filter" />
@@ -96,15 +107,17 @@ export default function MenuBar() {
         ))}
 
         <div className="right">
-          <div className="status-pills" aria-hidden>
-            <span
-              className={`status-pill ${
-                state.settings.prefs?.wifi ? "is-on" : "is-off"
-              }`}
-              title={state.settings.prefs?.wifi ? "Wi‑Fi" : "Wi‑Fi désactivé"}
+          <div className="status-icons">
+            <button
+              type="button"
+              className={`status-icon wifi ${wifiOn ? "is-on" : "is-off"}`}
+              title={wifiOn ? "Wi‑Fi connecté" : "Wi‑Fi désactivé"}
+              aria-label={wifiOn ? "Wi‑Fi connecté" : "Wi‑Fi désactivé"}
+              onClick={openReseau}
             >
-              Wi‑Fi
-            </span>
+              <WifiIcon className="wifi-glyph" />
+              {!wifiOn ? <span className="wifi-slash" aria-hidden /> : null}
+            </button>
             <span
               className={`status-pill ${
                 state.settings.prefs?.bluetooth ? "is-on" : "is-off"

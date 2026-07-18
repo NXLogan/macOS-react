@@ -217,6 +217,28 @@ const reducer = (state = initialState, action: AnyAction) => {
           ...state.settings,
           wallpaper: {
             ...state.settings.wallpaper,
+            open: !state.settings.wallpaper.open,
+          },
+        },
+      };
+    case "wallpaper/CLOSE":
+      return {
+        ...state,
+        settings: {
+          ...state.settings,
+          wallpaper: {
+            ...state.settings.wallpaper,
+            open: false,
+          },
+        },
+      };
+    case "wallpaper/OPEN":
+      return {
+        ...state,
+        settings: {
+          ...state.settings,
+          wallpaper: {
+            ...state.settings.wallpaper,
             open: true,
           },
         },
@@ -227,7 +249,9 @@ const reducer = (state = initialState, action: AnyAction) => {
         settings: {
           ...state.settings,
           wallpaper: {
-            open: true,
+            ...state.settings.wallpaper,
+            // Keep window closed when changing from Paramètres / elsewhere
+            open: state.settings.wallpaper.open,
             preview: action.payload.preview,
             src: action.payload.src,
             name: action.payload.name,

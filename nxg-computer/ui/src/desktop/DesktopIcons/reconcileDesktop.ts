@@ -16,7 +16,7 @@ export function reconcileDesktopFolders(icons: DesktopIcon[]): DesktopIcon[] {
   const folderIds = new Set(folders.map((f) => f.id));
   const folderById = new Map(folders.map((f) => [f.id, f]));
 
-  // Drop orphan folder icons + sync names
+  // Drop orphan folder icons + sync names / icon asset
   let next = icons
     .filter((icon) => {
       if (icon.kind !== "folder" || !icon.folderId) return true;
@@ -25,8 +25,11 @@ export function reconcileDesktopFolders(icons: DesktopIcon[]): DesktopIcon[] {
     .map((icon) => {
       if (icon.kind !== "folder" || !icon.folderId) return icon;
       const folder = folderById.get(icon.folderId);
-      if (!folder || folder.name === icon.name) return icon;
-      return { ...icon, name: folder.name };
+      if (!folder) return icon;
+      const name = folder.name !== icon.name ? folder.name : icon.name;
+      const asset = icon.icon === "finder.png" ? icon.icon : "finder.png";
+      if (name === icon.name && asset === icon.icon) return icon;
+      return { ...icon, name, icon: asset };
     });
 
   const present = new Set(
@@ -43,7 +46,7 @@ export function reconcileDesktopFolders(icons: DesktopIcon[]): DesktopIcon[] {
       {
         id: `desktop-folder-${folder.id}`,
         name: folder.name,
-        icon: "fichiers.png",
+        icon: "finder.png",
         kind: "folder" as const,
         folderId: folder.id,
         x: pos.x,
@@ -64,12 +67,7 @@ export function desktopFoldersNeedUpdate(
   for (let i = 0; i < before.length; i++) {
     const a = before[i];
     const b = after[i];
-    if (
-      a.id !== b.id ||
-      a.name !== b.name ||
-      a.folderId !== b.folderId ||
-      a.kind !== b.kind
-    ) {
+    if (a.id !== b.id || a.name !== b.name || a.folderId !== b.folderId || a.kind !== b.kind || a.icon !== b.icon) {
       return true;
     }
   }

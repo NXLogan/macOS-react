@@ -40,6 +40,8 @@ export default function NuiLifecycle() {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       if (!visibleRef.current && !isEnvBrowser()) return;
+      // Calculator (and other apps) may handle Escape in capture phase
+      if (e.defaultPrevented) return;
 
       const s = stateRef.current;
 
@@ -59,7 +61,20 @@ export default function NuiLifecycle() {
         return;
       }
 
-      // Close the computer (FiveM). In browser, lock instead of leaving blank.
+      // Don't lock / close while an app is frontmost (Escape = in-app cancel)
+      if (
+        s.onTop &&
+        s.onTop !== "wallpaper" &&
+        s.openApps?.[s.onTop]
+      ) {
+        return;
+      }
+      if (s.settings?.wallpaper?.open) {
+        e.preventDefault();
+        dispatch({ type: "wallpaper/CLOSE" });
+        return;
+      }
+
       e.preventDefault();
       if (isEnvBrowser()) {
         dispatch({ type: "auth/LOCK" });

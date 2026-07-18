@@ -48,7 +48,7 @@ function createDesktopFolder(dispatch: Dispatch, _state: storeType) {
     payload: {
       id: `desktop-folder-${folder.id}`,
       name: folder.name,
-      icon: "fichiers.png",
+      icon: "finder.png",
       kind: "folder",
       folderId: folder.id,
       x: pos.x,

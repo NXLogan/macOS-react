@@ -32,6 +32,11 @@ export default function Desktop({ children }: any) {
         type: "settings/CLOSE",
       });
     }
+
+    // Deselect desktop icons when clicking empty desktop / chrome
+    if (!(e.target as HTMLElement).closest(".desktop-icon")) {
+      window.dispatchEvent(new Event("nxg-desktop-clear-selection"));
+    }
   };
 
   const onContextMenu = (e: React.MouseEvent<HTMLElement>) => {

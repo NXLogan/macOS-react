@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { store } from "../../App";
-import toggleWallpaperVis from "../../utils/helpers/toggleWallpaperVis";
 import {
   cleanupDesktopGrid,
   DesktopIcon,
@@ -97,13 +96,16 @@ export default function ContextMenu() {
       payload: {
         id: `desktop-folder-${folder.id}`,
         name: folder.name,
-        icon: "fichiers.png",
+        icon: "finder.png",
         kind: "folder",
         folderId: folder.id,
         x: pos.x,
         y: pos.y,
       },
     });
+    window.setTimeout(() => {
+      window.dispatchEvent(new Event("nxg-desktop-clear-selection"));
+    }, 0);
   };
 
   const run = (action: string, e: React.MouseEvent) => {
@@ -115,10 +117,7 @@ export default function ContextMenu() {
         createDesktopFolder();
         break;
       case "wallpaper":
-        if (state.settings.wallpaper.open) {
-          toggleWallpaperVis(e);
-        }
-        dispatch({ type: "wallpaper/TOGGLE" });
+        dispatch({ type: "wallpaper/OPEN" });
         break;
       case "get-info":
         window.alert(

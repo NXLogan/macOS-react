@@ -45,6 +45,13 @@ export default function DesktopIcons() {
     };
   }, [dispatch]);
 
+  useEffect(() => {
+    const clear = () => setSelectedId(null);
+    window.addEventListener("nxg-desktop-clear-selection", clear);
+    return () =>
+      window.removeEventListener("nxg-desktop-clear-selection", clear);
+  }, []);
+
   const emitDockHover = (over: boolean, dragging = true) => {
     window.dispatchEvent(
       new CustomEvent("nxg-desktop-drag", {
@@ -100,6 +107,7 @@ export default function DesktopIcons() {
                 : ""
             }`}
             style={{ left: icon.x, top: icon.y }}
+            tabIndex={-1}
             initial={{ opacity: 0, scale: 0.7, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.55, y: 16 }}
