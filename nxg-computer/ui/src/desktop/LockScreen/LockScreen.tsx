@@ -60,11 +60,13 @@ export default function LockScreen() {
         <span className="lock-clock">
           {clock[0]} · {clock[1]}
         </span>
-        {showPreview && state.settings?.prefs?.notifications ? (
+        {showPreview &&
+        Array.isArray(state.notifications) &&
+        state.notifications.length > 0 ? (
           <div className="lock-preview">
-            {state.settings.prefs.notifications.sms
-              ? "1 nouveau message"
-              : "Aucune notification"}
+            {state.notifications.length === 1
+              ? state.notifications[0].title
+              : `${state.notifications.length} notifications`}
           </div>
         ) : null}
       </div>

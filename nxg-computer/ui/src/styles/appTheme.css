@@ -1,0 +1,119 @@
+/* App chrome theme — synced with Paramètres (clair / sombre / auto) */
+
+html.nxg-theme-light {
+  --app-bg: #f5f5f7;
+  --app-surface: #ffffff;
+  --app-surface-2: #f6f6f7;
+  --app-sidebar: #e8e8ed;
+  --app-sidebar-alt: #f3f3f5;
+  --app-titlebar: linear-gradient(180deg, #ececef 0%, #e3e3e6 100%);
+  --app-titlebar-border: #d0d0d4;
+  --app-toolbar: #f6f6f7;
+  --app-toolbar-border: #e2e2e5;
+  --app-text: #1d1d1f;
+  --app-text-secondary: #3a3a3c;
+  --app-muted: #6e6e73;
+  --app-muted-2: #8e8e93;
+  --app-border: rgba(0, 0, 0, 0.08);
+  --app-border-strong: #d5d5d8;
+  --app-border-soft: #efeff1;
+  --app-hover: rgba(0, 0, 0, 0.05);
+  --app-input-bg: #ffffff;
+  --app-btn-bg: #ffffff;
+  --app-btn-active: #dfe8f5;
+  --app-btn-active-border: #b9c9e0;
+  --app-row-alt: #fafafa;
+  --app-row-border: #f3f3f5;
+  --app-list-head-border: #e8e8eb;
+  --app-status-bg: #f6f6f7;
+  --app-card: #ffffff;
+  --app-card-border: rgba(0, 0, 0, 0.06);
+  --app-segment: #e8e8ed;
+  --app-segment-active: #ffffff;
+  --app-shadow: 0 22px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.22);
+  --app-link: #0673e8;
+  --app-selection: #0673e8;
+  --app-selection-soft: rgba(6, 115, 232, 0.16);
+  --app-about-box: #f2f2f7;
+  --app-toggle-off: #d1d1d6;
+  --app-wall-label: #3a3a3c;
+}
+
+html.nxg-theme-dark {
+  --app-bg: #1c1c1e;
+  --app-surface: #2c2c2e;
+  --app-surface-2: #232325;
+  --app-sidebar: #2c2c2e;
+  --app-sidebar-alt: #252528;
+  --app-titlebar: linear-gradient(180deg, #2c2c2e 0%, #232325 100%);
+  --app-titlebar-border: #3a3a3c;
+  --app-toolbar: #252528;
+  --app-toolbar-border: #3a3a3c;
+  --app-text: #f5f5f7;
+  --app-text-secondary: #e5e5ea;
+  --app-muted: #98989d;
+  --app-muted-2: #8e8e93;
+  --app-border: rgba(255, 255, 255, 0.1);
+  --app-border-strong: rgba(255, 255, 255, 0.16);
+  --app-border-soft: rgba(255, 255, 255, 0.08);
+  --app-hover: rgba(255, 255, 255, 0.08);
+  --app-input-bg: #1c1c1e;
+  --app-btn-bg: #3a3a3c;
+  --app-btn-active: #48484a;
+  --app-btn-active-border: #636366;
+  --app-row-alt: #252528;
+  --app-row-border: rgba(255, 255, 255, 0.06);
+  --app-list-head-border: rgba(255, 255, 255, 0.1);
+  --app-status-bg: #252528;
+  --app-card: #2c2c2e;
+  --app-card-border: rgba(255, 255, 255, 0.08);
+  --app-segment: #3a3a3c;
+  --app-segment-active: #48484a;
+  --app-shadow: 0 22px 60px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(0, 0, 0, 0.5);
+  --app-link: #64d2ff;
+  --app-selection: var(--user-color, #0a84ff);
+  --app-selection-soft: color-mix(in srgb, var(--user-color, #0a84ff) 28%, transparent);
+  --app-about-box: #1c1c1e;
+  --app-toggle-off: #39393d;
+  --app-wall-label: #e5e5ea;
+}
+
+/* Default before PrefsEffects runs */
+html:not(.nxg-theme-light):not(.nxg-theme-dark) {
+  --app-bg: #1c1c1e;
+  --app-surface: #2c2c2e;
+  --app-surface-2: #232325;
+  --app-sidebar: #2c2c2e;
+  --app-sidebar-alt: #252528;
+  --app-titlebar: linear-gradient(180deg, #2c2c2e 0%, #232325 100%);
+  --app-titlebar-border: #3a3a3c;
+  --app-toolbar: #252528;
+  --app-toolbar-border: #3a3a3c;
+  --app-text: #f5f5f7;
+  --app-text-secondary: #e5e5ea;
+  --app-muted: #98989d;
+  --app-muted-2: #8e8e93;
+  --app-border: rgba(255, 255, 255, 0.1);
+  --app-border-strong: rgba(255, 255, 255, 0.16);
+  --app-border-soft: rgba(255, 255, 255, 0.08);
+  --app-hover: rgba(255, 255, 255, 0.08);
+  --app-input-bg: #1c1c1e;
+  --app-btn-bg: #3a3a3c;
+  --app-btn-active: #48484a;
+  --app-btn-active-border: #636366;
+  --app-row-alt: #252528;
+  --app-row-border: rgba(255, 255, 255, 0.06);
+  --app-list-head-border: rgba(255, 255, 255, 0.1);
+  --app-status-bg: #252528;
+  --app-card: #2c2c2e;
+  --app-card-border: rgba(255, 255, 255, 0.08);
+  --app-segment: #3a3a3c;
+  --app-segment-active: #48484a;
+  --app-shadow: 0 22px 60px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(0, 0, 0, 0.5);
+  --app-link: #64d2ff;
+  --app-selection: var(--user-color, #0a84ff);
+  --app-selection-soft: color-mix(in srgb, var(--user-color, #0a84ff) 28%, transparent);
+  --app-about-box: #1c1c1e;
+  --app-toggle-off: #39393d;
+  --app-wall-label: #e5e5ea;
+}

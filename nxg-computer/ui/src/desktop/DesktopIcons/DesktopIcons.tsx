@@ -26,16 +26,21 @@ export default function DesktopIcons() {
 
   const openApp = (icon: DesktopIcon) => {
     if (dragMoved.current) return;
+    // Folders: only open via double-click (handled separately)
+    if (icon.kind === "folder") return;
+    if (icon.id === "fichiers" || icon.id === "parametres") {
+      dispatch({ type: "apps/OPEN", payload: icon.id });
+    }
+  };
+
+  const openFolder = (icon: DesktopIcon) => {
+    if (dragMoved.current) return;
     if (icon.kind === "folder" && icon.folderId) {
       dispatch({
         type: "apps/OPEN",
         payload: "fichiers",
         folderId: icon.folderId,
       });
-      return;
-    }
-    if (icon.id === "fichiers" || icon.id === "parametres") {
-      dispatch({ type: "apps/OPEN", payload: icon.id });
     }
   };
 
@@ -123,7 +128,10 @@ export default function DesktopIcons() {
               });
             }}
             onClick={() => openApp(icon)}
-            onDoubleClick={() => openApp(icon)}
+            onDoubleClick={() => {
+              if (icon.kind === "folder") openFolder(icon);
+              else openApp(icon);
+            }}
             onContextMenu={(e) => {
               e.preventDefault();
               e.stopPropagation();

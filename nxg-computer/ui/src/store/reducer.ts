@@ -1,6 +1,7 @@
 import { AnyAction } from "@reduxjs/toolkit";
 import initialState from "./initialState";
 import getDate from "../utils/helpers/getDate";
+import { ensureCoreDockApps } from "../desktop/Dock/dockApps";
 
 const reducer = (state = initialState, action: AnyAction) => {
   switch (action.type) {
@@ -222,14 +223,27 @@ const reducer = (state = initialState, action: AnyAction) => {
           ? action.payload
           : action.payload?.id;
       const folderId = action.folderId ?? action.payload?.folderId;
+      const prev = state.windowChrome[appId] || {
+        minimized: false,
+        maximized: false,
+      };
       return {
         ...state,
         openApps: {
           ...state.openApps,
           [appId]: true,
         },
+        windowChrome: {
+          ...state.windowChrome,
+          [appId]: {
+            ...prev,
+            minimized: false,
+          },
+        },
         fichiersStartId:
-          appId === "fichiers" ? folderId ?? state.fichiersStartId : state.fichiersStartId,
+          appId === "fichiers"
+            ? folderId ?? state.fichiersStartId
+            : state.fichiersStartId,
       };
     }
     case "apps/CLOSE":
@@ -239,7 +253,54 @@ const reducer = (state = initialState, action: AnyAction) => {
           ...state.openApps,
           [action.payload]: false,
         },
+        windowChrome: {
+          ...state.windowChrome,
+          [action.payload]: { minimized: false, maximized: false },
+        },
       };
+    case "window/MINIMIZE":
+      return {
+        ...state,
+        windowChrome: {
+          ...state.windowChrome,
+          [action.payload]: {
+            minimized: true,
+            maximized: false,
+          },
+        },
+      };
+    case "window/TOGGLE_MAX": {
+      const prev = state.windowChrome[action.payload] || {
+        minimized: false,
+        maximized: false,
+      };
+      return {
+        ...state,
+        windowChrome: {
+          ...state.windowChrome,
+          [action.payload]: {
+            minimized: false,
+            maximized: !prev.maximized,
+          },
+        },
+      };
+    }
+    case "window/RESTORE": {
+      const prev = state.windowChrome[action.payload] || {
+        minimized: false,
+        maximized: false,
+      };
+      return {
+        ...state,
+        windowChrome: {
+          ...state.windowChrome,
+          [action.payload]: {
+            ...prev,
+            minimized: false,
+          },
+        },
+      };
+    }
     case "fichiers/SET_START":
       return {
         ...state,
@@ -285,6 +346,11 @@ const reducer = (state = initialState, action: AnyAction) => {
       };
     case "memory/HYDRATE": {
       const { session, profile } = action.payload;
+      const desktopIcons = profile.desktopIcons ?? [];
+      const dockApps = ensureCoreDockApps(
+        profile.dockApps?.length ? profile.dockApps : state.dockApps,
+        desktopIcons
+      );
       return {
         ...state,
         session: {
@@ -299,8 +365,8 @@ const reducer = (state = initialState, action: AnyAction) => {
           avatar: profile.user?.avatar ?? state.user.avatar,
           phone: profile.user?.phone ?? state.user.phone,
         },
-        dockApps: profile.dockApps?.length ? profile.dockApps : state.dockApps,
-        desktopIcons: profile.desktopIcons ?? [],
+        dockApps,
+        desktopIcons,
         settings: {
           ...state.settings,
           open: false,

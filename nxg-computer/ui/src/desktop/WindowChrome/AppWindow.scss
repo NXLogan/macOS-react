@@ -1,0 +1,286 @@
+.nxg-traffic {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 2;
+  flex-shrink: 0;
+
+  .dot {
+    width: 12px;
+    height: 12px;
+    min-width: 12px;
+    min-height: 12px;
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+    line-height: 0;
+    cursor: url("../../assets/images/pointing.png"), auto;
+    box-sizing: border-box;
+    overflow: hidden;
+    transition: transform 0.12s ease, filter 0.12s ease;
+
+    &:active {
+      transform: scale(0.88);
+    }
+
+    .ico {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 7px;
+      height: 7px;
+      margin: 0;
+      padding: 0;
+      transform: translate(-50%, -50%);
+      display: block;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    &:hover .ico {
+      opacity: 0.9;
+    }
+  }
+
+  .red {
+    background: #ff5f57;
+  }
+  .yellow {
+    background: #febc2e;
+  }
+  .green {
+    background: #28c840;
+  }
+}
+
+/* Outer: positioned by react-draggable (transform). Layout maximize lives here. */
+.nxg-drag-root {
+  position: absolute;
+  z-index: 25;
+  visibility: visible;
+  will-change: transform, opacity, width, height, top, left, right, bottom;
+  transition:
+    width 0.38s cubic-bezier(0.32, 0.72, 0, 1),
+    height 0.38s cubic-bezier(0.32, 0.72, 0, 1),
+    top 0.38s cubic-bezier(0.32, 0.72, 0, 1),
+    left 0.38s cubic-bezier(0.32, 0.72, 0, 1),
+    right 0.38s cubic-bezier(0.32, 0.72, 0, 1),
+    bottom 0.38s cubic-bezier(0.32, 0.72, 0, 1),
+    border-radius 0.32s ease,
+    opacity 0.2s ease,
+    visibility 0s linear 0s;
+
+  &.is-maximized {
+    position: fixed !important;
+    left: 10px !important;
+    right: 10px !important;
+    top: 36px !important;
+    bottom: 88px !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+    transform: none !important;
+    border-radius: 12px;
+    z-index: 40 !important;
+  }
+
+  &.is-minimized {
+    pointer-events: none;
+    /* Stay in layout for reverse animation; hide after genie finishes */
+    visibility: hidden;
+    transition:
+      width 0.38s cubic-bezier(0.32, 0.72, 0, 1),
+      height 0.38s cubic-bezier(0.32, 0.72, 0, 1),
+      top 0.38s cubic-bezier(0.32, 0.72, 0, 1),
+      left 0.38s cubic-bezier(0.32, 0.72, 0, 1),
+      right 0.38s cubic-bezier(0.32, 0.72, 0, 1),
+      bottom 0.38s cubic-bezier(0.32, 0.72, 0, 1),
+      border-radius 0.32s ease,
+      opacity 0.2s ease,
+      visibility 0s linear 0.42s;
+  }
+
+  &.is-closing {
+    pointer-events: none;
+  }
+}
+
+/* Inner: visual chrome + scale/opacity animations (safe with Draggable) */
+.nxg-app-pane {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  transform-origin: center center;
+  will-change: transform, opacity, filter;
+  transition:
+    transform 0.38s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.28s ease,
+    filter 0.28s ease,
+    box-shadow 0.32s ease,
+    border-radius 0.32s ease;
+
+  .nxg-drag-root.is-maximized & {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    left: 0 !important;
+    top: 0 !important;
+    position: relative !important;
+    border-radius: 12px;
+  }
+
+  /* Open: spring in from slightly below */
+  .nxg-drag-root.is-opening & {
+    animation: nxg-win-open 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Close: shrink + fade — signals “gone” */
+  .nxg-drag-root.is-closing & {
+    opacity: 0;
+    transform: scale(0.9);
+    filter: brightness(0.85);
+    transition:
+      transform 0.22s cubic-bezier(0.4, 0, 1, 1),
+      opacity 0.2s ease,
+      filter 0.2s ease;
+  }
+
+  /* Minimize: shrink toward dock — app stays open in Dock */
+  .nxg-drag-root.is-minimized & {
+    opacity: 0;
+    filter: brightness(1.05);
+    transition:
+      transform 0.42s cubic-bezier(0.4, 0.0, 0.2, 1),
+      opacity 0.32s ease 0.05s,
+      filter 0.32s ease;
+  }
+
+  /* Restore from Dock: reverse genie */
+  .nxg-drag-root.is-restoring & {
+    animation: nxg-win-restore 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Maximize: subtle settle so the size change reads clearly */
+  .nxg-drag-root.is-maximized:not(.is-opening):not(.is-closing) & {
+    animation: nxg-win-maximize 0.38s cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+}
+
+/* Dock position → minimize flies toward the dock */
+.desktop-shell:has(.dock-pos-bottom) .nxg-drag-root.is-minimized .nxg-app-pane,
+.dock-shell.dock-pos-bottom ~ * .nxg-drag-root.is-minimized .nxg-app-pane {
+  transform-origin: center bottom;
+  transform: translateY(28%) scale(0.18, 0.08);
+}
+
+.desktop-shell:has(.dock-pos-left) .nxg-drag-root.is-minimized .nxg-app-pane {
+  transform-origin: left center;
+  transform: translateX(-18%) scale(0.08, 0.18);
+}
+
+.desktop-shell:has(.dock-pos-right) .nxg-drag-root.is-minimized .nxg-app-pane {
+  transform-origin: right center;
+  transform: translateX(18%) scale(0.08, 0.18);
+}
+
+.desktop-shell:has(.dock-pos-hidden) .nxg-drag-root.is-minimized .nxg-app-pane {
+  transform-origin: center bottom;
+  transform: translateY(20%) scale(0.2);
+}
+
+@keyframes nxg-win-open {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes nxg-win-restore {
+  from {
+    opacity: 0;
+    transform: translateY(24%) scale(0.2, 0.1);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes nxg-win-maximize {
+  from {
+    filter: brightness(1.04);
+  }
+  to {
+    filter: brightness(1);
+  }
+}
+
+/* Legacy class used by older chrome helpers */
+.nxg-app-window {
+  &.is-minimized {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  &.is-maximized {
+    position: fixed !important;
+    left: 10px !important;
+    right: 10px !important;
+    top: 36px !important;
+    bottom: 88px !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+    transform: none !important;
+    border-radius: 10px;
+    z-index: 40 !important;
+  }
+}
+
+.dock-pos-left ~ * .nxg-drag-root.is-maximized,
+.desktop-shell:has(.dock-pos-left) .nxg-drag-root.is-maximized,
+.dock-pos-left ~ * .nxg-app-window.is-maximized,
+.desktop-shell:has(.dock-pos-left) .nxg-app-window.is-maximized {
+  left: 88px !important;
+}
+
+.desktop-shell:has(.dock-pos-right) .nxg-drag-root.is-maximized,
+.desktop-shell:has(.dock-pos-right) .nxg-app-window.is-maximized {
+  right: 88px !important;
+}
+
+.desktop-shell:has(.dock-pos-hidden) .nxg-drag-root.is-maximized,
+.desktop-shell:has(.dock-pos-hidden) .nxg-app-window.is-maximized {
+  bottom: 12px !important;
+}
+
+/* Dock indicator pulse when a minimized app is restored / focused */
+.dock-item.is-minimized-app .point {
+  animation: nxg-dock-breathe 1.4s ease-in-out infinite;
+}
+
+@keyframes nxg-dock-breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}

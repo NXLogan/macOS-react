@@ -9,7 +9,7 @@
   align-items: flex-end;
   pointer-events: none;
   z-index: 15;
-  transition: inset 0.25s ease;
+  transition: inset 0.25s ease, opacity 0.2s ease, transform 0.2s ease;
 
   &.dock-pos-bottom {
     left: 0;
@@ -40,6 +40,12 @@
     .dock-item {
       height: auto;
     }
+
+    .dock-item.hovered .dock-icon,
+    .dock-item.distance-1 .dock-icon,
+    .dock-item.distance-2 .dock-icon {
+      transform-origin: center center;
+    }
   }
 
   &.dock-pos-right {
@@ -61,6 +67,12 @@
 
     .dock-item {
       height: auto;
+    }
+
+    .dock-item.hovered .dock-icon,
+    .dock-item.distance-1 .dock-icon,
+    .dock-item.distance-2 .dock-icon {
+      transform-origin: center center;
     }
   }
 
@@ -177,6 +189,16 @@
     }
   }
 
+  &.is-extracting {
+    .dock-item.is-ghosted {
+      width: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden;
+      min-width: 0;
+    }
+  }
+
   &.dock-drop-hover {
     box-shadow: var(--nxg-shadow), 0 0 0 2px rgba(10, 132, 255, 0.65),
       0 0 28px rgba(10, 132, 255, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -231,11 +253,6 @@
   .is-dragging-item {
     z-index: 80 !important;
     cursor: grabbing !important;
-
-    .dock-icon {
-      filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.55))
-        drop-shadow(0 0 12px rgba(200, 245, 66, 0.3));
-    }
   }
 
   .dock-icon {
@@ -252,6 +269,8 @@
 
   &:not(.is-dragging) {
     .dock-item.hovered {
+      z-index: 5;
+
       .tool-tip {
         opacity: 1;
         visibility: visible;
@@ -259,6 +278,7 @@
 
       .dock-icon {
         transform: scale(1.55);
+        filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.45));
       }
     }
 
@@ -272,16 +292,24 @@
   }
 }
 
-.dock-fly-ghost {
+.dock-drag-follow {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 56px;
-  height: 56px;
-  object-fit: contain;
+  z-index: 200;
+  width: 64px;
+  height: 64px;
+  margin-left: -32px;
+  margin-top: -32px;
   pointer-events: none;
-  z-index: 90;
-  filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.5));
+  will-change: left, top;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.55))
+      drop-shadow(0 0 12px rgba(10, 132, 255, 0.35));
+    transform: scale(1.08);
+  }
 }
 
 .point {

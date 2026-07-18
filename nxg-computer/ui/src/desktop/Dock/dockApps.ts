@@ -36,6 +36,37 @@ export const APP_CATALOG: DockApp[] = [
   { id: "twitter", name: "Twitter", icon: "twitter.png" },
 ];
 
+/** Apps that must stay available in the dock unless explicitly on the desktop. */
+export const PINNED_CORE_APPS = ["fichiers", "parametres"] as const;
+
+export function ensureCoreDockApps(
+  dockApps: DockApp[],
+  desktopIcons: { id: string; kind?: string }[] = []
+): DockApp[] {
+  const map = catalogMap();
+  const onDesktop = new Set(
+    desktopIcons.filter((i) => i.kind !== "folder").map((i) => i.id)
+  );
+  const next = [...dockApps];
+  const present = new Set(next.map((a) => a.id));
+
+  for (const id of PINNED_CORE_APPS) {
+    if (present.has(id) || onDesktop.has(id)) continue;
+    const app = map.get(id);
+    if (!app) continue;
+    // Insert Paramètres right after Fichiers when possible
+    if (id === "parametres") {
+      const fi = next.findIndex((a) => a.id === "fichiers");
+      next.splice(fi >= 0 ? fi + 1 : 0, 0, app);
+    } else {
+      next.unshift(app);
+    }
+    present.add(id);
+  }
+
+  return next;
+}
+
 export const DEFAULT_DOCK_APPS = APP_CATALOG;
 
 export const DOCK_ORDER_KEY = "nxg-dock-order";
@@ -111,9 +142,12 @@ export function loadDockOrder(
       }
     });
 
-    return ordered;
+    return ensureCoreDockApps(ordered, desktopIcons);
   } catch {
-    return APP_CATALOG.filter((app) => !onDesktop.has(app.id));
+    return ensureCoreDockApps(
+      APP_CATALOG.filter((app) => !onDesktop.has(app.id)),
+      desktopIcons
+    );
   }
 }
 

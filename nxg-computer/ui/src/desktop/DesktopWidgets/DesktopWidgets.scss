@@ -10,12 +10,13 @@
   width: 200px;
   padding: 16px 18px;
   border-radius: 16px;
-  background: rgba(20, 22, 28, 0.55);
+  background: var(--app-surface);
   backdrop-filter: blur(18px) saturate(1.2);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
-  color: #fff;
+  border: 1px solid var(--app-border-strong);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  color: var(--app-text);
   font-family: var(--nxg-font);
+  transition: background 0.2s ease, color 0.2s ease;
 
   &.weather {
     .dw-city {

@@ -89,9 +89,25 @@ export default function ContextMenu() {
     state.desktopIcons.find((i: DesktopIcon) => i.id === targetId);
 
   const createDesktopFolder = () => {
+    const typed = window.prompt("Nom du dossier", "Nouveau dossier");
+    // Cancel
+    if (typed === null) return;
+
     const nodes = loadFs();
+    const base = typed.trim() || "Nouveau dossier";
+    const existingNames = new Set(
+      nodes
+        .filter((n) => n.parentId === SPECIAL.desktop && n.kind === "folder")
+        .map((n) => n.name)
+    );
+    let name = base;
+    if (existingNames.has(name)) {
+      let i = 2;
+      while (existingNames.has(`${base} ${i}`)) i += 1;
+      name = `${base} ${i}`;
+    }
+
     const folderId = createId("folder");
-    const name = "Sans titre";
     nodes.push({
       id: folderId,
       name,
@@ -115,6 +131,8 @@ export default function ContextMenu() {
       },
     });
     window.dispatchEvent(new Event("nxg-fs-changed"));
+    window.dispatchEvent(new Event("nxg-memory-dirty"));
+    // Do NOT open Fichiers — folder only appears on the desktop (+ synced FS)
   };
 
   const run = (action: string, e: React.MouseEvent) => {

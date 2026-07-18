@@ -51,6 +51,8 @@ const initialState: storeType = {
   soundPlayed: false,
   onTop: "wallpaper",
   openApps: {},
+  windowChrome: {},
+  notifications: [],
   session: {
     computerId: "local-pc",
     userId: "local-user",

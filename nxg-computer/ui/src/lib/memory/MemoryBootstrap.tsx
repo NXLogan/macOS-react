@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef } from "react";
 import { store } from "../../App";
-import { loadFs, saveFs, setFsScope } from "../../apps/fichiers/fs";
+import { loadFs, saveFs, sanitizeFs, setFsScope } from "../../apps/fichiers/fs";
 import {
   applyWallpaperToPage,
   resolveBundledWallpaper,
@@ -64,7 +64,9 @@ export default function MemoryBootstrap() {
     const shaped = ensureProfileShape(profile, computerId, userId, userName);
     setFsScope(computerId, userId);
     if (shaped.filesystem?.length) {
-      saveFs(shaped.filesystem);
+      saveFs(sanitizeFs(shaped.filesystem as any));
+    } else {
+      saveFs(loadFs());
     }
 
     dispatch({

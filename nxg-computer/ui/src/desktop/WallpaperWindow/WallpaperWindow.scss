@@ -615,3 +615,57 @@
   background: #d1d1d1;
   border-radius: 9999px;
 }
+
+/* Theme sync — Fond d'écran window */
+html.nxg-theme-light {
+  .wallpaper-menu,
+  .wallpaper-menu-minimized,
+  .wallpaper-menu-closed {
+    background-color: #f2f2f7;
+    border-color: #c6c6c8;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+
+    #wallpaper-handle {
+      color: #1d1d1f;
+      border-top-color: #e5e5ea;
+      border-bottom-color: #d1d1d6;
+      background: linear-gradient(360deg, #e8e8ed 0%, #f5f5f7 100%);
+    }
+
+    .selection {
+      .prev {
+        h1 {
+          color: #1d1d1f;
+        }
+        h2 {
+          color: #6e6e73;
+        }
+        .check h2 {
+          color: #1d1d1f;
+        }
+        .custom-import-btn {
+          background: rgba(0, 0, 0, 0.06);
+          border-color: rgba(0, 0, 0, 0.12);
+          color: #1d1d1f;
+        }
+      }
+
+      .wallpaper-selector {
+        h1 {
+          color: #1d1d1f;
+        }
+        .item-container h2 {
+          color: #3a3a3c;
+        }
+      }
+    }
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #e8e8ed;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #aeaeb2;
+  }
+}

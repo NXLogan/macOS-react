@@ -1,16 +1,11 @@
-import React, {
-  MouseEvent,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import { AnimatePresence, Reorder, motion } from "framer-motion";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { AnimatePresence, Reorder } from "framer-motion";
+import { createPortal } from "react-dom";
 import { store } from "../../App";
-import identifyDockItem from "../../utils/helpers/identifyDockItem";
 import {
   DesktopIcon,
   DockApp,
+  ensureCoreDockApps,
   isOverDock,
   snapDesktopPosition,
 } from "./dockApps";
@@ -29,19 +24,33 @@ export default function Dock() {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [hoverLocked, setHoverLocked] = useState(false);
   const [dockDropHover, setDockDropHover] = useState(false);
-  const [ghost, setGhost] = useState<{
-    id: string;
-    name: string;
-    icon: string;
-    x: number;
-    y: number;
-  } | null>(null);
+  const [extracting, setExtracting] = useState(false);
+  const [cursor, setCursor] = useState({ x: 0, y: 0 });
   const didDrag = useRef(false);
   const pointer = useRef({ x: 0, y: 0 });
+  const dragItem = useRef<DockApp | null>(null);
+
+  useEffect(() => {
+    if (!state.session?.ready) return;
+    const next = ensureCoreDockApps(state.dockApps, state.desktopIcons);
+    if (next.length !== state.dockApps.length) {
+      dispatch({ type: "dock/REORDER", payload: next });
+    } else {
+      const ids = new Set(state.dockApps.map((a: DockApp) => a.id));
+      if (!ids.has("parametres") || !ids.has("fichiers")) {
+        dispatch({ type: "dock/REORDER", payload: next });
+      }
+    }
+  }, [state.session?.ready]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
       pointer.current = { x: e.clientX, y: e.clientY };
+      if (draggingId) {
+        setCursor({ x: e.clientX, y: e.clientY });
+        const over = isOverDock(e.clientX, e.clientY);
+        setExtracting(!over);
+      }
     };
     const onDesktopDrag = (e: Event) => {
       const detail = (e as CustomEvent).detail as {
@@ -61,13 +70,11 @@ export default function Dock() {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("nxg-desktop-drag", onDesktopDrag);
     };
-  }, []);
+  }, [draggingId]);
 
-  const selectDockItem = (e: MouseEvent) => {
+  const selectDockItem = (index: number) => {
     if (draggingId || hoverLocked) return;
-    const id = identifyDockItem(e.target);
-    if (id === undefined || Number.isNaN(id)) return;
-    dispatch({ type: "dock/SELECT", payload: id });
+    dispatch({ type: "dock/SELECT", payload: index });
   };
 
   const resetDock = () => {
@@ -76,13 +83,18 @@ export default function Dock() {
   };
 
   const onReorder = (next: DockApp[]) => {
+    // Ignore reorder jumps while extracting to desktop
+    if (extracting) return;
     dispatch({ type: "dock/REORDER", payload: next });
   };
 
-  const beginDrag = (id: string) => {
+  const beginDrag = (item: DockApp) => {
     didDrag.current = true;
-    setDraggingId(id);
+    dragItem.current = item;
+    setDraggingId(item.id);
     setHoverLocked(true);
+    setExtracting(false);
+    setCursor({ ...pointer.current });
     dispatch({ type: "dock/RESET" });
   };
 
@@ -91,44 +103,40 @@ export default function Dock() {
     const droppingToDesktop = !isOverDock(clientX, clientY);
 
     setDraggingId(null);
+    setExtracting(false);
+    dragItem.current = null;
     dispatch({ type: "dock/RESET" });
 
     if (droppingToDesktop) {
       const pos = snapDesktopPosition(clientX - 36, clientY - 36);
-      setGhost({
-        id: item.id,
-        name: item.name,
-        icon: item.icon,
-        x: clientX - 28,
-        y: clientY - 28,
-      });
       dispatch({ type: "dock/REMOVE", payload: item.id });
-
-      window.requestAnimationFrame(() => {
-        dispatch({
-          type: "desktop/ADD_ICON",
-          payload: {
-            id: item.id,
-            name: item.name,
-            icon: item.icon,
-            kind: "app",
-            x: pos.x,
-            y: pos.y,
-          } as DesktopIcon,
-        });
-        setGhost(null);
+      dispatch({
+        type: "desktop/ADD_ICON",
+        payload: {
+          id: item.id,
+          name: item.name,
+          icon: item.icon,
+          kind: "app",
+          x: pos.x,
+          y: pos.y,
+        } as DesktopIcon,
       });
     }
 
     window.setTimeout(() => {
       setHoverLocked(false);
       didDrag.current = false;
-    }, 180);
+    }, 160);
   };
 
   const openApp = (item: DockApp) => {
     if (didDrag.current || draggingId) return;
     if (item.id === "fichiers" || item.id === "parametres") {
+      const chrome = state.windowChrome?.[item.id];
+      if (state.openApps?.[item.id] && chrome?.minimized) {
+        dispatch({ type: "window/RESTORE", payload: item.id });
+        return;
+      }
       dispatch({ type: "apps/OPEN", payload: item.id });
     }
   };
@@ -145,9 +153,14 @@ export default function Dock() {
   const count = state.dockApps.length;
   const dockPos = state.settings?.prefs?.dockPosition || "bottom";
   const reorderAxis = dockPos === "left" || dockPos === "right" ? "y" : "x";
+  const dragApp =
+    draggingId && extracting
+      ? state.dockApps.find((a: DockApp) => a.id === draggingId) ||
+        dragItem.current
+      : null;
 
   return (
-    <div className="dock-shell">
+    <div className={`dock-shell dock-pos-${dockPos}`}>
       <Reorder.Group
         as="div"
         axis={reorderAxis}
@@ -156,82 +169,95 @@ export default function Dock() {
         layout
         className={`dock ${dockSizeClass(count)} ${
           draggingId ? "is-dragging" : ""
-        } ${dockDropHover ? "dock-drop-hover" : ""}`}
+        } ${extracting ? "is-extracting" : ""} ${
+          dockDropHover ? "dock-drop-hover" : ""
+        }`}
+        onMouseLeave={resetDock}
         transition={{ type: "spring", stiffness: 420, damping: 36 }}
       >
         <AnimatePresence initial={false} mode="popLayout">
-          {state.dockApps.map((item: DockApp, index: number) => (
-            <Reorder.Item
-              as="div"
-              key={item.id}
-              value={item}
-              id={item.id}
-              layout
-              initial={{ opacity: 0, scale: 0.6, y: 18 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.55, y: 22 }}
-              className={`dock-item ${
-                state.openApps?.[item.id] ? "" : "no-point"
-              } ${distanceClass(index)} ${
-                draggingId === item.id ? "is-dragging-item" : ""
-              }`}
-              onMouseEnter={selectDockItem}
-              onMouseMove={selectDockItem}
-              onMouseLeave={resetDock}
-              onPointerDown={() => {
-                didDrag.current = false;
-                dispatch({ type: "dock/RESET" });
-              }}
-              onClick={() => openApp(item)}
-              onDragStart={() => beginDrag(item.id)}
-              onDragEnd={() => endDrag(item)}
-              whileDrag={{
-                scale: 1.18,
-                zIndex: 80,
-                filter: "brightness(1.1)",
-                boxShadow: "0 18px 40px rgba(0,0,0,0.45)",
-              }}
-              transition={{ type: "spring", stiffness: 520, damping: 34 }}
-            >
-              <div className="tool-tip">{item.name}</div>
-              <motion.img
-                layoutId={`nxg-app-${item.id}`}
-                alt={item.name}
-                className={`dock-icon ${item.id === "fichiers" ? "finder" : ""}`}
-                src={require(`../../assets/images/webp/${item.icon}`)}
-                draggable={false}
-                transition={{ type: "spring", stiffness: 480, damping: 36 }}
-              />
-              {state.openApps?.[item.id] ? <div className="point" /> : null}
-            </Reorder.Item>
-          ))}
+          {state.dockApps.map((item: DockApp, index: number) => {
+            const isDrag = draggingId === item.id;
+            const hideInDock = isDrag && extracting;
+            return (
+              <Reorder.Item
+                as="div"
+                key={item.id}
+                value={item}
+                id={item.id}
+                layout
+                initial={{ opacity: 0, scale: 0.6, y: 18 }}
+                animate={{
+                  opacity: hideInDock ? 0 : 1,
+                  scale: hideInDock ? 0.5 : 1,
+                  y: 0,
+                }}
+                exit={{ opacity: 0, scale: 0.55, y: 22 }}
+                className={`dock-item ${
+                  state.openApps?.[item.id] ? "" : "no-point"
+                } ${
+                  state.windowChrome?.[item.id]?.minimized
+                    ? "is-minimized-app"
+                    : ""
+                } ${distanceClass(index)} ${
+                  isDrag ? "is-dragging-item" : ""
+                } ${hideInDock ? "is-ghosted" : ""}`}
+                data-index={index}
+                onMouseEnter={() => selectDockItem(index)}
+                onMouseMove={() => selectDockItem(index)}
+                onPointerDown={() => {
+                  didDrag.current = false;
+                  dispatch({ type: "dock/RESET" });
+                }}
+                onClick={() => openApp(item)}
+                onDragStart={() => beginDrag(item)}
+                onDragEnd={() => endDrag(item)}
+                whileDrag={
+                  extracting
+                    ? { opacity: 0, scale: 0.5, zIndex: 1 }
+                    : {
+                        scale: 1.12,
+                        zIndex: 80,
+                        filter: "brightness(1.08)",
+                      }
+                }
+                transition={{ type: "spring", stiffness: 520, damping: 34 }}
+                style={{ pointerEvents: hideInDock ? "none" : "auto" }}
+              >
+                <div className="tool-tip">{item.name}</div>
+                <img
+                  alt={item.name}
+                  className={`dock-icon ${
+                    item.id === "fichiers" ? "finder" : ""
+                  }`}
+                  src={require(`../../assets/images/webp/${item.icon}`)}
+                  draggable={false}
+                />
+                {state.openApps?.[item.id] ? <div className="point" /> : null}
+              </Reorder.Item>
+            );
+          })}
         </AnimatePresence>
       </Reorder.Group>
 
-      <AnimatePresence>
-        {ghost ? (
-          <motion.img
-            key={`ghost-${ghost.id}`}
-            className="dock-fly-ghost"
-            src={require(`../../assets/images/webp/${ghost.icon}`)}
-            alt=""
-            initial={{
-              opacity: 1,
-              scale: 1.15,
-              x: ghost.x,
-              y: ghost.y,
-            }}
-            animate={{
-              opacity: 0,
-              scale: 0.9,
-              x: ghost.x,
-              y: ghost.y - 8,
-            }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}
-          />
-        ) : null}
-      </AnimatePresence>
+      {dragApp
+        ? createPortal(
+            <div
+              className="dock-drag-follow"
+              style={{
+                left: cursor.x,
+                top: cursor.y,
+              }}
+            >
+              <img
+                src={require(`../../assets/images/webp/${dragApp.icon}`)}
+                alt=""
+                draggable={false}
+              />
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
 }

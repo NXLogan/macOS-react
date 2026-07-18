@@ -8,17 +8,18 @@
   gap: 1px;
   padding: 5px;
   margin: 0;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--app-border-strong, rgba(255, 255, 255, 0.14));
   border-radius: 8px;
-  background: rgba(36, 36, 38, 0.92);
+  background: var(--app-surface, rgba(36, 36, 38, 0.92));
   backdrop-filter: blur(24px) saturate(1.2);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 0 0 0.5px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--app-shadow, 0 12px 40px rgba(0, 0, 0, 0.55));
   font-family: var(--nxg-font);
-  color: var(--nxg-text);
+  color: var(--app-text, #f5f5f7);
   opacity: 1;
   visibility: visible;
   transform-origin: top left;
   animation: context-in 0.12s ease-out;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 @keyframes context-in {
@@ -36,7 +37,7 @@
   display: block;
   width: 100%;
   text-align: left;
-  color: #f5f5f7;
+  color: var(--app-text, #f5f5f7);
   margin: 0;
   padding: 5px 10px;
   font-size: 13px;
@@ -49,7 +50,7 @@
   cursor: url("../../assets/images/pointing.png"), auto;
 
   &:hover:not(.disabled) {
-    background: #0a84ff;
+    background: var(--user-color, #0a84ff);
     color: #fff;
   }
 
@@ -62,5 +63,10 @@
 .context-divider {
   height: 1px;
   margin: 4px 6px;
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--app-border, rgba(255, 255, 255, 0.12));
+}
+
+html.nxg-theme-light .context-menu {
+  background: rgba(246, 246, 248, 0.94);
+  border-color: rgba(0, 0, 0, 0.12);
 }

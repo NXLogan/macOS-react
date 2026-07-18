@@ -1,10 +1,9 @@
 import React, { useContext, useMemo, useRef, useState } from "react";
-import Draggable from "react-draggable";
 import { store } from "../../App";
-import { ReactComponent as Close } from "../../assets/images/svg/close.svg";
-import { ReactComponent as Minimize } from "../../assets/images/svg/minimize.svg";
-import { ReactComponent as Stretch } from "../../assets/images/svg/stretch.svg";
+import TrafficLights from "../../desktop/WindowChrome/TrafficLights";
+import AppWindowShell from "../../desktop/WindowChrome/AppWindowShell";
 import wallpapers from "../../utils/helpers/wallpapers";
+
 import {
   applyWallpaperToPage,
   fileToWallpaperDataUrl,
@@ -27,16 +26,47 @@ import {
 } from "./settingsMeta";
 import "./ParametresApp.scss";
 
-const SECTIONS: { id: SettingsSectionId; label: string; icon: string }[] = [
-  { id: "apparence", label: "Apparence", icon: "🎨" },
-  { id: "compte", label: "Compte", icon: "👤" },
-  { id: "reseau", label: "Réseau", icon: "📡" },
-  { id: "notifications", label: "Notifications", icon: "🔔" },
-  { id: "dock", label: "Dock & Bureau", icon: "⬜" },
-  { id: "stockage", label: "Stockage", icon: "💾" },
-  { id: "confidentialite", label: "Confidentialité", icon: "🔒" },
-  { id: "apropos", label: "À propos", icon: "ℹ️" },
+const SECTIONS: {
+  id: SettingsSectionId;
+  label: string;
+  icon: string;
+  color: string;
+}[] = [
+  { id: "apparence", label: "Apparence", icon: "🎨", color: "#bf5af2" },
+  { id: "compte", label: "Compte", icon: "👤", color: "#64d2ff" },
+  { id: "reseau", label: "Réseau", icon: "📡", color: "#0a84ff" },
+  { id: "notifications", label: "Notifications", icon: "🔔", color: "#ff453a" },
+  { id: "dock", label: "Dock & Bureau", icon: "⬜", color: "#8e8e93" },
+  { id: "stockage", label: "Stockage", icon: "💾", color: "#30d158" },
+  {
+    id: "confidentialite",
+    label: "Confidentialité",
+    icon: "🔒",
+    color: "#ff9f0a",
+  },
+  { id: "apropos", label: "À propos", icon: "ℹ️", color: "#5e5ce6" },
 ];
+
+function PaneHead({
+  sectionId,
+  title,
+}: {
+  sectionId: SettingsSectionId;
+  title: string;
+}) {
+  const meta = SECTIONS.find((s) => s.id === sectionId);
+  return (
+    <div className="ps-pane-head">
+      <div
+        className="ps-pane-icon"
+        style={{ background: meta?.color ?? "#0a84ff" }}
+      >
+        {meta?.icon ?? "⚙️"}
+      </div>
+      <h1>{title}</h1>
+    </div>
+  );
+}
 
 function Toggle({
   on,
@@ -222,37 +252,52 @@ export default function ParametresApp() {
   if (!open) return null;
 
   return (
-    <Draggable handle=".parametres-titlebar" bounds="parent">
-      <div className="parametres-window" id="parametres-window">
+    <AppWindowShell
+      appId="parametres"
+      handle=".parametres-titlebar"
+      defaultPosition={{ x: 0, y: 0 }}
+      windowClassName="parametres-window"
+      windowId="parametres-window"
+    >
         <header className="parametres-titlebar">
-          <div className="parametres-dots">
-            <button
-              type="button"
-              className="dot red"
-              onClick={() =>
-                dispatch({ type: "apps/CLOSE", payload: "parametres" })
-              }
-            >
-              <Close className="ico" />
-            </button>
-            <button type="button" className="dot yellow">
-              <Minimize className="ico" />
-            </button>
-            <button type="button" className="dot green">
-              <Stretch className="ico" />
-            </button>
-          </div>
+          <TrafficLights appId="parametres" />
           <div className="parametres-title">Paramètres</div>
         </header>
 
         <div className="parametres-body">
           <aside className="parametres-sidebar">
-            <input
-              className="parametres-search"
-              placeholder="Rechercher"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+            <div className="parametres-search-wrap">
+              <span className="parametres-search-ico">⌕</span>
+              <input
+                className="parametres-search"
+                placeholder="Rechercher"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+
+            <button
+              type="button"
+              className={`parametres-user ${
+                section === "compte" ? "active" : ""
+              }`}
+              onClick={() => setSection("compte")}
+            >
+              <div className="parametres-user-avatar">
+                {state.user.avatar ? (
+                  <img src={state.user.avatar} alt="" />
+                ) : (
+                  (state.user.name || "N").charAt(0).toUpperCase()
+                )}
+              </div>
+              <div className="parametres-user-meta">
+                <div className="parametres-user-name">
+                  {state.user.name || "Utilisateur"}
+                </div>
+                <div className="parametres-user-sub">Compte NXG</div>
+              </div>
+            </button>
+
             <nav>
               {filteredSections.map((s) => (
                 <button
@@ -263,7 +308,12 @@ export default function ParametresApp() {
                   }`}
                   onClick={() => setSection(s.id)}
                 >
-                  <span className="parametres-nav-ico">{s.icon}</span>
+                  <span
+                    className="parametres-nav-badge"
+                    style={{ background: s.color }}
+                  >
+                    {s.icon}
+                  </span>
                   {s.label}
                 </button>
               ))}
@@ -273,9 +323,9 @@ export default function ParametresApp() {
           <main className="parametres-content">
             {section === "apparence" && (
               <div className="ps-pane">
-                <h1>Apparence</h1>
-                <section className="ps-card">
-                  <h2>Fond d’écran</h2>
+                <PaneHead sectionId="apparence" title="Apparence" />
+                <h2>Fond d’écran</h2>
+                <section className="ps-card ps-card-pad">
                   <img className="ps-wall-preview" src={wallPreview} alt="" />
                   <div className="ps-wall-grid">
                     {wallpapers.map((w: { surname: string; name: string }) => (
@@ -314,48 +364,50 @@ export default function ParametresApp() {
                   </button>
                 </section>
 
+                <h2>Thème</h2>
                 <section className="ps-card">
-                  <h2>Thème</h2>
-                  <Segmented<ThemeMode>
-                    value={prefs.theme}
-                    onChange={(theme) => patchPrefs({ theme })}
-                    options={[
-                      { id: "light", label: "Clair" },
-                      { id: "dark", label: "Sombre" },
-                      { id: "auto", label: "Auto" },
-                    ]}
-                  />
+                  <Row label="Apparence">
+                    <Segmented<ThemeMode>
+                      value={prefs.theme}
+                      onChange={(theme) => patchPrefs({ theme })}
+                      options={[
+                        { id: "light", label: "Clair" },
+                        { id: "dark", label: "Sombre" },
+                        { id: "auto", label: "Auto" },
+                      ]}
+                    />
+                  </Row>
                 </section>
 
+                <h2>Dock</h2>
                 <section className="ps-card">
-                  <h2>Taille des icônes du Dock</h2>
-                  <Segmented<DockIconSize>
-                    value={prefs.dockIconSize}
-                    onChange={(dockIconSize) => patchPrefs({ dockIconSize })}
-                    options={[
-                      { id: "small", label: "Petit" },
-                      { id: "medium", label: "Moyen" },
-                      { id: "large", label: "Grand" },
-                    ]}
-                  />
+                  <Row label="Taille des icônes">
+                    <Segmented<DockIconSize>
+                      value={prefs.dockIconSize}
+                      onChange={(dockIconSize) => patchPrefs({ dockIconSize })}
+                      options={[
+                        { id: "small", label: "Petit" },
+                        { id: "medium", label: "Moyen" },
+                        { id: "large", label: "Grand" },
+                      ]}
+                    />
+                  </Row>
+                  <Row label="Position">
+                    <Segmented<DockPosition>
+                      value={prefs.dockPosition}
+                      onChange={(dockPosition) => patchPrefs({ dockPosition })}
+                      options={[
+                        { id: "bottom", label: "Bas" },
+                        { id: "left", label: "Gauche" },
+                        { id: "right", label: "Droite" },
+                        { id: "hidden", label: "Masqué" },
+                      ]}
+                    />
+                  </Row>
                 </section>
 
-                <section className="ps-card">
-                  <h2>Position du Dock</h2>
-                  <Segmented<DockPosition>
-                    value={prefs.dockPosition}
-                    onChange={(dockPosition) => patchPrefs({ dockPosition })}
-                    options={[
-                      { id: "bottom", label: "Bas" },
-                      { id: "left", label: "Gauche" },
-                      { id: "right", label: "Droite" },
-                      { id: "hidden", label: "Masqué" },
-                    ]}
-                  />
-                </section>
-
-                <section className="ps-card">
-                  <h2>Couleur d’accent</h2>
+                <h2>Couleur d’accent</h2>
+                <section className="ps-card ps-card-pad">
                   <div className="ps-accents">
                     {(Object.keys(ACCENT_COLORS) as AccentId[]).map((id) => (
                       <button
@@ -376,8 +428,9 @@ export default function ParametresApp() {
 
             {section === "compte" && (
               <div className="ps-pane">
-                <h1>Compte / Profil</h1>
-                <section className="ps-card ps-profile">
+                <PaneHead sectionId="compte" title="Compte" />
+                <h2>Profil</h2>
+                <section className="ps-card ps-card-pad ps-profile">
                   <button
                     type="button"
                     className="ps-avatar"
@@ -427,8 +480,8 @@ export default function ParametresApp() {
                   </div>
                 </section>
 
+                <h2>Verrouillage de session</h2>
                 <section className="ps-card">
-                  <h2>Verrouillage de session</h2>
                   <Row label="Mot de passe">
                     <input
                       className="ps-input-sm"
@@ -461,7 +514,8 @@ export default function ParametresApp() {
 
             {section === "reseau" && (
               <div className="ps-pane">
-                <h1>Réseau / Général</h1>
+                <PaneHead sectionId="reseau" title="Réseau" />
+                <h2>Connexion</h2>
                 <section className="ps-card">
                   <Row label="Wi‑Fi" hint={prefs.wifi ? "NXG_City_5G" : "Off"}>
                     <Toggle
@@ -513,7 +567,8 @@ export default function ParametresApp() {
 
             {section === "notifications" && (
               <div className="ps-pane">
-                <h1>Notifications</h1>
+                <PaneHead sectionId="notifications" title="Notifications" />
+                <h2>Autorisations</h2>
                 <section className="ps-card">
                   {(
                     [
@@ -559,9 +614,9 @@ export default function ParametresApp() {
 
             {section === "dock" && (
               <div className="ps-pane">
-                <h1>Dock et Bureau</h1>
-                <section className="ps-card">
-                  <h2>Apps épinglées</h2>
+                <PaneHead sectionId="dock" title="Dock & Bureau" />
+                <h2>Apps épinglées</h2>
+                <section className="ps-card ps-card-pad">
                   <p className="ps-hint">
                     Réorganise aussi par glisser-déposer directement dans le
                     Dock.
@@ -592,6 +647,7 @@ export default function ParametresApp() {
                     })}
                   </div>
                 </section>
+                <h2>Bureau</h2>
                 <section className="ps-card">
                   <Row
                     label="Widgets sur le bureau"
@@ -608,13 +664,12 @@ export default function ParametresApp() {
 
             {section === "stockage" && (
               <div className="ps-pane">
-                <h1>Stockage</h1>
-                <section className="ps-card">
+                <PaneHead sectionId="stockage" title="Stockage" />
+                <h2>Disque NXG</h2>
+                <section className="ps-card ps-card-pad">
                   <div className="ps-storage-head">
-                    <strong>
-                      {(usedMb / 1024).toFixed(1)} Go
-                    </strong>{" "}
-                    sur {TOTAL_STORAGE_GB} Go
+                    <strong>{(usedMb / 1024).toFixed(1)} Go</strong> sur{" "}
+                    {TOTAL_STORAGE_GB} Go
                   </div>
                   <div className="ps-storage-bar">
                     <div style={{ width: `${usedPct}%` }} />
@@ -646,9 +701,12 @@ export default function ParametresApp() {
 
             {section === "confidentialite" && (
               <div className="ps-pane">
-                <h1>Confidentialité / Sécurité</h1>
+                <PaneHead
+                  sectionId="confidentialite"
+                  title="Confidentialité"
+                />
+                <h2>Permissions</h2>
                 <section className="ps-card">
-                  <h2>Permissions</h2>
                   {(
                     [
                       ["camera", "Caméra"],
@@ -673,11 +731,9 @@ export default function ParametresApp() {
                     </Row>
                   ))}
                 </section>
+                <h2>Sécurité</h2>
                 <section className="ps-card">
-                  <Row
-                    label="Verrouillage auto"
-                    hint="Après inactivité"
-                  >
+                  <Row label="Verrouillage auto" hint="Après inactivité">
                     <select
                       className="ps-select"
                       value={prefs.autoLockMinutes}
@@ -700,7 +756,7 @@ export default function ParametresApp() {
 
             {section === "apropos" && (
               <div className="ps-pane">
-                <h1>À propos</h1>
+                <PaneHead sectionId="apropos" title="À propos" />
                 <section className="ps-card ps-about">
                   <div className="ps-about-logo">NXG</div>
                   <h2>NXG Computer</h2>
@@ -731,7 +787,6 @@ export default function ParametresApp() {
         </div>
 
         {toast ? <div className="parametres-toast">{toast}</div> : null}
-      </div>
-    </Draggable>
+    </AppWindowShell>
   );
 }

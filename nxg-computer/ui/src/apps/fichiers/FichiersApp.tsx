@@ -5,11 +5,9 @@ import React, {
   useRef,
   useState,
 } from "react";
-import Draggable from "react-draggable";
 import { store } from "../../App";
-import { ReactComponent as Close } from "../../assets/images/svg/close.svg";
-import { ReactComponent as Minimize } from "../../assets/images/svg/minimize.svg";
-import { ReactComponent as Stretch } from "../../assets/images/svg/stretch.svg";
+import TrafficLights from "../../desktop/WindowChrome/TrafficLights";
+import AppWindowShell from "../../desktop/WindowChrome/AppWindowShell";
 import {
   createId,
   fileIconLabel,
@@ -27,12 +25,17 @@ import {
 } from "./fs";
 import "./FichiersApp.scss";
 
-const SIDEBAR: { id: SidebarId; label: string; icon: string }[] = [
-  { id: "recents", label: "Récents", icon: "⏱" },
-  { id: "downloads", label: "Téléchargements", icon: "↓" },
-  { id: "documents", label: "Documents", icon: "📄" },
-  { id: "desktop", label: "Bureau", icon: "🖥" },
-  { id: "disk", label: "Disque NXG", icon: "💾" },
+const SIDEBAR: {
+  id: SidebarId;
+  label: string;
+  icon: string;
+  color: string;
+}[] = [
+  { id: "recents", label: "Récents", icon: "⏱", color: "#5e5ce6" },
+  { id: "downloads", label: "Téléchargements", icon: "↓", color: "#0a84ff" },
+  { id: "documents", label: "Documents", icon: "📄", color: "#64d2ff" },
+  { id: "desktop", label: "Bureau", icon: "🖥", color: "#30d158" },
+  { id: "disk", label: "Disque NXG", icon: "💾", color: "#ff9f0a" },
 ];
 
 export default function FichiersApp() {
@@ -46,7 +49,7 @@ export default function FichiersApp() {
   const [search, setSearch] = useState("");
   const [view, setView] = useState<"icons" | "list">("list");
   const [creating, setCreating] = useState(false);
-  const [newName, setNewName] = useState("Sans titre");
+  const [newName, setNewName] = useState("Nouveau dossier");
   const createInputRef = useRef<HTMLInputElement>(null);
 
   const open = Boolean(state.openApps?.fichiers);
@@ -153,11 +156,11 @@ export default function FichiersApp() {
 
   const startCreateFolder = () => {
     setCreating(true);
-    setNewName("Sans titre");
+    setNewName("Nouveau dossier");
   };
 
   const confirmCreateFolder = () => {
-    const name = newName.trim() || "Sans titre";
+    const name = newName.trim() || "Nouveau dossier";
     const folder: FsNode = {
       id: createId("folder"),
       name,
@@ -180,29 +183,15 @@ export default function FichiersApp() {
   if (!open) return null;
 
   return (
-    <Draggable
+    <AppWindowShell
+      appId="fichiers"
       handle="#fichiers-handle"
-      bounds="parent"
       defaultPosition={{ x: 120, y: 70 }}
+      windowClassName="fichiers-window"
+      windowId="fichiers-window"
     >
-      <div className="fichiers-window" id="fichiers-window">
         <div className="fichiers-titlebar" id="fichiers-handle">
-          <div className="fichiers-dots">
-            <button
-              type="button"
-              className="dot red"
-              onClick={closeApp}
-              aria-label="Fermer"
-            >
-              <Close className="ico" />
-            </button>
-            <button type="button" className="dot yellow" aria-label="Réduire">
-              <Minimize className="ico" />
-            </button>
-            <button type="button" className="dot green" aria-label="Plein écran">
-              <Stretch className="ico" />
-            </button>
-          </div>
+          <TrafficLights appId="fichiers" onClose={closeApp} />
           <div className="fichiers-title">
             {search.trim()
               ? `Résultats pour « ${search.trim()} »`
@@ -276,7 +265,12 @@ export default function FichiersApp() {
                 className={`side-item ${sidebar === item.id ? "active" : ""}`}
                 onClick={() => goSidebar(item.id)}
               >
-                <span className="side-ico">{item.icon}</span>
+                <span
+                  className="side-badge"
+                  style={{ background: item.color }}
+                >
+                  {item.icon}
+                </span>
                 {item.label}
               </button>
             ))}
@@ -379,7 +373,6 @@ export default function FichiersApp() {
             ? ` — ${getNode(nodes, selectedId)?.name ?? ""} sélectionné`
             : ""}
         </div>
-      </div>
-    </Draggable>
+    </AppWindowShell>
   );
 }

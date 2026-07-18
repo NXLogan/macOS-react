@@ -37,6 +37,12 @@ interface storeType {
   onTop: string;
   soundPlayed: boolean;
   openApps: Record<string, boolean>;
+  windowChrome: Record<
+    string,
+    { minimized: boolean; maximized: boolean }
+  >;
+  /** Real inbox previews for lock screen — empty until a real app pushes one. */
+  notifications: { id: string; title: string; body?: string; at: number }[];
   session: {
     computerId: string;
     userId: string;

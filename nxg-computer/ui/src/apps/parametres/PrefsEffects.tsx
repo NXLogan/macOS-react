@@ -1,7 +1,40 @@
 import { useContext, useEffect } from "react";
 import { store } from "../../App";
-import { ACCENT_COLORS, AccentId } from "../../apps/parametres/settingsMeta";
+import { ACCENT_COLORS, AccentId } from "./settingsMeta";
 import updateSysColor from "../../utils/helpers/updateSysColor";
+
+function resolveDark(theme: string): boolean {
+  if (theme === "light") return false;
+  if (theme === "dark") return true;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
+function applyThemeClass(theme: string) {
+  const root = document.documentElement;
+  const page = document.getElementById("page");
+  const dark = resolveDark(theme);
+
+  root.classList.remove(
+    "theme-light",
+    "theme-dark",
+    "theme-auto",
+    "theme-dark-resolved",
+    "theme-light-resolved",
+    "nxg-theme-light",
+    "nxg-theme-dark"
+  );
+  root.classList.add(`theme-${theme}`);
+  root.classList.add(dark ? "nxg-theme-dark" : "nxg-theme-light");
+  if (theme === "auto") {
+    root.classList.add(dark ? "theme-dark-resolved" : "theme-light-resolved");
+  }
+
+  if (page) {
+    page.dataset.theme = dark ? "dark" : "light";
+  }
+
+  root.dataset.theme = dark ? "dark" : "light";
+}
 
 /** Applies theme, accent, dock layout, auto-lock from prefs. */
 export default function PrefsEffects() {
@@ -10,30 +43,20 @@ export default function PrefsEffects() {
 
   useEffect(() => {
     if (!prefs) return;
-    const root = document.documentElement;
-    const page = document.getElementById("page");
-
-    root.classList.remove("theme-light", "theme-dark", "theme-auto");
-    root.classList.add(`theme-${prefs.theme}`);
-
-    let dark = prefs.theme === "dark";
-    if (prefs.theme === "auto") {
-      dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      root.classList.toggle("theme-dark-resolved", dark);
-      root.classList.toggle("theme-light-resolved", !dark);
-    } else {
-      root.classList.remove("theme-dark-resolved", "theme-light-resolved");
-    }
-
-    if (page) {
-      page.dataset.theme = dark || prefs.theme === "dark" ? "dark" : "light";
-    }
+    applyThemeClass(prefs.theme || "dark");
 
     const accentId = (prefs.accent || "blue") as AccentId;
     const accent = ACCENT_COLORS[accentId] || ACCENT_COLORS.blue;
-    root.style.setProperty("--nxg-accent", accent);
-    root.style.setProperty("--user-color", accent);
+    document.documentElement.style.setProperty("--nxg-accent", accent);
+    document.documentElement.style.setProperty("--user-color", accent);
     updateSysColor(accentId);
+
+    if (prefs.theme !== "auto") return;
+
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = () => applyThemeClass("auto");
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
   }, [prefs?.theme, prefs?.accent]);
 
   useEffect(() => {
@@ -46,11 +69,10 @@ export default function PrefsEffects() {
       "dock-pos-right",
       "dock-pos-hidden"
     );
-    shell.classList.add(`dock-pos-${prefs.dockPosition}`);
-    shell.setAttribute("data-icon-size", prefs.dockIconSize);
-  }, [prefs?.dockPosition, prefs?.dockIconSize]);
+    shell.classList.add(`dock-pos-${prefs.dockPosition || "bottom"}`);
+    shell.setAttribute("data-icon-size", prefs.dockIconSize || "medium");
+  }, [prefs?.dockPosition, prefs?.dockIconSize, state.session?.ready]);
 
-  // Auto-lock after inactivity
   useEffect(() => {
     if (!prefs || state.booting || state.locked) return;
     const minutes = prefs.autoLockMinutes;
@@ -72,12 +94,7 @@ export default function PrefsEffects() {
       if (timer) window.clearTimeout(timer);
       events.forEach((ev) => window.removeEventListener(ev, arm));
     };
-  }, [
-    prefs?.autoLockMinutes,
-    state.booting,
-    state.locked,
-    dispatch,
-  ]);
+  }, [prefs?.autoLockMinutes, state.booting, state.locked, dispatch]);
 
   return null;
 }

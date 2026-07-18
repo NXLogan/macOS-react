@@ -74,59 +74,28 @@ export function buildDefaultFs(): FsNode[] {
       parentId: SPECIAL.disk,
       createdAt: now,
     },
-    {
-      id: "file-welcome",
-      name: "Bienvenue.txt",
-      kind: "file",
-      parentId: SPECIAL.documents,
-      createdAt: now - 86400000,
-      size: 1280,
-      ext: "txt",
-    },
-    {
-      id: "file-rapport",
-      name: "Rapport_NXG.pdf",
-      kind: "file",
-      parentId: SPECIAL.documents,
-      createdAt: now - 172800000,
-      size: 245760,
-      ext: "pdf",
-    },
-    {
-      id: "file-facture",
-      name: "Facture_mars.pdf",
-      kind: "file",
-      parentId: SPECIAL.downloads,
-      createdAt: now - 3600000,
-      size: 89400,
-      ext: "pdf",
-    },
-    {
-      id: "file-photo",
-      name: "Photo_LosSantos.jpg",
-      kind: "file",
-      parentId: SPECIAL.downloads,
-      createdAt: now - 7200000,
-      size: 2048000,
-      ext: "jpg",
-    },
-    {
-      id: "file-notes",
-      name: "Notes.md",
-      kind: "file",
-      parentId: SPECIAL.desktop,
-      createdAt: now - 43200000,
-      size: 4200,
-      ext: "md",
-    },
-    {
-      id: "folder-projets",
-      name: "Projets",
-      kind: "folder",
-      parentId: SPECIAL.documents,
-      createdAt: now - 259200000,
-    },
   ];
+}
+
+/** Seed demo files shipped in early builds — strip on load. */
+const FAKE_FS_IDS = new Set([
+  "file-welcome",
+  "file-rapport",
+  "file-facture",
+  "file-photo",
+  "file-notes",
+  "folder-projets",
+]);
+
+export function sanitizeFs(nodes: FsNode[]): FsNode[] {
+  const cleaned = nodes.filter((n) => !FAKE_FS_IDS.has(n.id));
+  const ids = new Set(cleaned.map((n) => n.id));
+  // Ensure special folders always exist
+  const defaults = buildDefaultFs();
+  for (const folder of defaults) {
+    if (!ids.has(folder.id)) cleaned.push(folder);
+  }
+  return cleaned;
 }
 
 export function loadFs(): FsNode[] {
@@ -140,10 +109,8 @@ export function loadFs(): FsNode[] {
       localStorage.setItem(fsScopeKey, JSON.stringify(fresh));
       return fresh;
     }
-    const nodes = JSON.parse(raw) as FsNode[];
-    if (fsScopeKey !== FS_STORAGE_KEY) {
-      localStorage.setItem(fsScopeKey, JSON.stringify(nodes));
-    }
+    const nodes = sanitizeFs(JSON.parse(raw) as FsNode[]);
+    localStorage.setItem(fsScopeKey, JSON.stringify(nodes));
     return nodes;
   } catch {
     return buildDefaultFs();
@@ -151,7 +118,7 @@ export function loadFs(): FsNode[] {
 }
 
 export function saveFs(nodes: FsNode[]) {
-  localStorage.setItem(fsScopeKey, JSON.stringify(nodes));
+  localStorage.setItem(fsScopeKey, JSON.stringify(sanitizeFs(nodes)));
 }
 
 export function getChildren(nodes: FsNode[], parentId: string) {
