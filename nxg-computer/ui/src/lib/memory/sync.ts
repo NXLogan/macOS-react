@@ -7,7 +7,7 @@ import {
 import { ComputerProfile } from "./types";
 import storeType from "../../store/types/store";
 import { defaultPrefs } from "../../store/initialState";
-import { ensureCoreDockApps } from "../../desktop/Dock/dockApps";
+import { ensureCoreDockApps, sanitizeDockApps } from "../../desktop/Dock/dockApps";
 import { sanitizeFs } from "../../apps/fichiers/fs";
 
 export function profileFromState(
@@ -117,7 +117,10 @@ export function ensureProfileShape(
       phone: partial.user?.phone ?? base.user.phone,
     },
     dockApps: partial.dockApps?.length
-      ? ensureCoreDockApps(partial.dockApps, partial.desktopIcons ?? [])
+      ? ensureCoreDockApps(
+          sanitizeDockApps(partial.dockApps),
+          partial.desktopIcons ?? []
+        )
       : ensureCoreDockApps(base.dockApps, partial.desktopIcons ?? []),
     desktopIcons: partial.desktopIcons ?? base.desktopIcons,
     settings: {

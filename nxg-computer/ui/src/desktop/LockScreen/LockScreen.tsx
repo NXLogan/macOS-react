@@ -46,15 +46,14 @@ export default function LockScreen() {
   return (
     <motion.div
       className="lock-screen"
-      initial={{ opacity: 0, scale: 1, filter: "blur(0px)" }}
-      animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       exit={{
         opacity: 0,
-        scale: 1.12,
-        filter: "blur(24px)",
-        transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+        scale: 1.04,
+        transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
       }}
-      transition={{ duration: 0.55, ease: "easeOut" }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
     >
       <div className="lock-top">
         <span className="lock-clock">
@@ -98,7 +97,7 @@ export default function LockScreen() {
             className={`lock-touchid ${touchBusy ? "busy" : ""}`}
             onClick={fakeTouchId}
           >
-            {touchBusy ? "Authentification…" : "Touch ID"}
+            {touchBusy ? "Authentification…" : "NXG ID"}
           </button>
         ) : (
           <>
@@ -116,14 +115,16 @@ export default function LockScreen() {
                 type="button"
                 className="lock-icon-btn"
                 onClick={() => setShowPassword((v) => !v)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={
+                  showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"
+                }
               >
-                {showPassword ? "HIDE" : "SHOW"}
+                {showPassword ? "MASQUER" : "AFFICHER"}
               </button>
               <button
                 type="submit"
                 className="lock-icon-btn submit"
-                aria-label="Unlock"
+                aria-label="Déverrouiller"
               >
                 ↵
               </button>

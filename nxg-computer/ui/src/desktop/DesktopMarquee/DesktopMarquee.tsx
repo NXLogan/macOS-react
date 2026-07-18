@@ -14,6 +14,8 @@ const BLOCKED_SELECTORS = [
   ".lock-screen",
   ".bootup-window",
   ".fichiers-window",
+  ".parametres-window",
+  ".calculator-window",
   ".desktop-icon",
   ".desktop-selection",
 ];

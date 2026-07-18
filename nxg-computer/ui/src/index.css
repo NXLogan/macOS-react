@@ -15,11 +15,19 @@
   --nxg-ok: #3dde8c;
   --nxg-radius: 6px;
   --nxg-radius-lg: 12px;
-  --nxg-blur: blur(22px) saturate(1.15);
-  --nxg-font: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
-  --nxg-mono: "JetBrains Mono", ui-monospace, monospace;
+  /* FiveM CEF: avoid live backdrop blur — solid translucent chrome is far cheaper */
+  --nxg-blur: none;
+  --nxg-surface: rgba(18, 20, 26, 0.94);
+  --nxg-surface-2: rgba(24, 27, 34, 0.96);
+  --nxg-font: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --nxg-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --nxg-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
   --user-color: #c8f542;
+}
+
+/* Optional richer glass when player enables animations AND browser can afford it */
+html.nxg-fx-glass {
+  --nxg-blur: blur(12px) saturate(1.1);
 }
 
 body {
@@ -32,6 +40,20 @@ body {
   overflow-x: hidden;
   overflow-y: hidden !important;
   background: var(--nxg-bg);
+}
+
+html.nxg-nui-hidden,
+html.nxg-nui-hidden body {
+  visibility: hidden !important;
+}
+
+html.nxg-reduce-motion *,
+html.nxg-reduce-motion *::before,
+html.nxg-reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
 }
 
 code {

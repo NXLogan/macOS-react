@@ -1,4 +1,4 @@
--- Server bootstrap for NXG Computer
+-- Server bootstrap for NXGos
 NXG.Debug('Server started')
 
 RegisterNetEvent('nxg-computer:server:ping', function()

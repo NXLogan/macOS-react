@@ -1,20 +1,17 @@
 import "./App.scss";
-import React, { createContext, useReducer } from "react";
-import { ChakraProvider } from "@chakra-ui/react";
-import { LayoutGroup } from "framer-motion";
+import React, { createContext, lazy, Suspense, useReducer } from "react";
 import reducer from "./store/reducer";
 import initialState from "./store/initialState";
 import Desktop from "./desktop/Desktop/Desktop";
 import MenuBar from "./desktop/MenuBar/MenuBar";
 import Dock from "./desktop/Dock/Dock";
 import ContextMenu from "./desktop/ContextMenu/ContextMenu";
-import WallpaperWindow from "./desktop/WallpaperWindow/WallpaperWindow";
-import FichiersApp from "./apps/fichiers/FichiersApp";
-import ParametresApp from "./apps/parametres/ParametresApp";
 import PrefsEffects from "./apps/parametres/PrefsEffects";
 import DesktopIcons from "./desktop/DesktopIcons/DesktopIcons";
 import MemoryBootstrap from "./lib/memory/MemoryBootstrap";
+import NuiLifecycle from "./lib/nui/NuiLifecycle";
 import DesktopWidgets from "./desktop/DesktopWidgets/DesktopWidgets";
+import { OpenAppsGate } from "./store/OpenAppsGate";
 
 export const store = createContext<any>(null);
 
@@ -24,26 +21,39 @@ const StoreProvider = ({ children }: any) => (
   </store.Provider>
 );
 
+const FichiersApp = lazy(() => import("./apps/fichiers/FichiersApp"));
+const ParametresApp = lazy(() => import("./apps/parametres/ParametresApp"));
+const CalculatorApp = lazy(() => import("./apps/calculator/CalculatorApp"));
+const WallpaperWindow = lazy(
+  () => import("./desktop/WallpaperWindow/WallpaperWindow")
+);
+
 function App() {
   return (
-    <ChakraProvider>
-      <StoreProvider>
-        <MemoryBootstrap />
-        <PrefsEffects />
-        <LayoutGroup id="nxg-dock-desktop">
-          <Desktop>
-            <MenuBar />
-            <DesktopIcons />
-            <DesktopWidgets />
+    <StoreProvider>
+      <NuiLifecycle />
+      <MemoryBootstrap />
+      <PrefsEffects />
+      <Desktop>
+        <MenuBar />
+        <DesktopIcons />
+        <DesktopWidgets />
+        <Suspense fallback={null}>
+          <OpenAppsGate appId="fichiers">
             <FichiersApp />
+          </OpenAppsGate>
+          <OpenAppsGate appId="parametres">
             <ParametresApp />
-            <WallpaperWindow />
-            <ContextMenu />
-            <Dock />
-          </Desktop>
-        </LayoutGroup>
-      </StoreProvider>
-    </ChakraProvider>
+          </OpenAppsGate>
+          <OpenAppsGate appId="calculator">
+            <CalculatorApp />
+          </OpenAppsGate>
+          <WallpaperWindow />
+        </Suspense>
+        <ContextMenu />
+        <Dock />
+      </Desktop>
+    </StoreProvider>
   );
 }
 

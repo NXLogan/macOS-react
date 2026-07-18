@@ -1,0 +1,44 @@
+/* NXGos chrome — solid by default for FiveM CEF performance */
+
+html.nxg-theme-dark,
+html:not(.nxg-theme-light):not(.nxg-theme-dark) {
+  --nxg-os-glass: rgba(36, 36, 38, 0.96);
+  --nxg-os-glass-solid: rgba(44, 44, 46, 0.98);
+  --nxg-os-sidebar: rgba(28, 28, 30, 0.98);
+  --nxg-os-row: rgba(58, 58, 60, 0.92);
+  --nxg-os-row-hover: rgba(72, 72, 74, 0.95);
+  --nxg-os-hairline: rgba(255, 255, 255, 0.08);
+  --nxg-os-hairline-strong: rgba(255, 255, 255, 0.14);
+  --nxg-os-text: #f5f5f7;
+  --nxg-os-muted: #98989d;
+  --nxg-os-search: rgba(255, 255, 255, 0.08);
+  --nxg-os-selection: #0a84ff;
+  --nxg-os-hover: rgba(255, 255, 255, 0.06);
+  --nxg-os-shadow: 0 24px 80px rgba(0, 0, 0, 0.55),
+    0 0 0 0.5px rgba(255, 255, 255, 0.12);
+}
+
+html.nxg-theme-light {
+  --nxg-os-glass: rgba(246, 246, 248, 0.97);
+  --nxg-os-glass-solid: rgba(255, 255, 255, 0.98);
+  --nxg-os-sidebar: rgba(232, 232, 237, 0.98);
+  --nxg-os-row: rgba(255, 255, 255, 0.95);
+  --nxg-os-row-hover: rgba(255, 255, 255, 1);
+  --nxg-os-hairline: rgba(0, 0, 0, 0.06);
+  --nxg-os-hairline-strong: rgba(0, 0, 0, 0.1);
+  --nxg-os-text: #1d1d1f;
+  --nxg-os-muted: #6e6e73;
+  --nxg-os-search: rgba(0, 0, 0, 0.06);
+  --nxg-os-selection: #007aff;
+  --nxg-os-hover: rgba(0, 0, 0, 0.05);
+  --nxg-os-shadow: 0 24px 80px rgba(0, 0, 0, 0.18),
+    0 0 0 0.5px rgba(0, 0, 0, 0.12);
+}
+
+html.nxg-fx-glass.nxg-theme-dark,
+html.nxg-fx-glass:not(.nxg-theme-light):not(.nxg-theme-dark) {
+  --nxg-os-glass: rgba(40, 40, 42, 0.78);
+}
+html.nxg-fx-glass.nxg-theme-light {
+  --nxg-os-glass: rgba(246, 246, 248, 0.82);
+}

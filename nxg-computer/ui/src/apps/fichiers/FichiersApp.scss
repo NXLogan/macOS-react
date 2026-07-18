@@ -2,19 +2,27 @@
   position: relative;
   width: 100%;
   height: 100%;
-  background: var(--mac-glass);
-  backdrop-filter: blur(40px) saturate(160%);
-  -webkit-backdrop-filter: blur(40px) saturate(160%);
+  background: var(--nxg-os-glass);
+  backdrop-filter: var(--nxg-blur);
+  -webkit-backdrop-filter: var(--nxg-blur);
   border-radius: 12px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--mac-shadow);
-  border: 0.5px solid var(--mac-hairline-strong);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
-    var(--nxg-font), sans-serif;
-  color: var(--mac-text);
+  box-shadow: var(--nxg-os-shadow);
+  border: 0.5px solid var(--nxg-os-hairline-strong);
+  font-family: var(--nxg-font), "Space Grotesk", "Segoe UI", sans-serif;
+  color: var(--nxg-os-text);
   transition: background 0.2s ease, color 0.2s ease;
+}
+
+.fichiers-window-hit {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .nxg-drag-root:has(> .fichiers-window) {
@@ -26,7 +34,7 @@
 .fichiers-titlebar {
   height: 52px;
   background: transparent;
-  border-bottom: 0.5px solid var(--mac-hairline);
+  border-bottom: 0.5px solid var(--nxg-os-hairline);
   display: flex;
   align-items: center;
   padding: 0 14px;
@@ -46,7 +54,7 @@
   text-align: center;
   font-size: 13px;
   font-weight: 600;
-  color: var(--mac-text);
+  color: var(--nxg-os-text);
   pointer-events: none;
   letter-spacing: -0.01em;
 }
@@ -54,7 +62,7 @@
 .fichiers-toolbar {
   height: 40px;
   background: transparent;
-  border-bottom: 0.5px solid var(--mac-hairline);
+  border-bottom: 0.5px solid var(--nxg-os-hairline);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -75,7 +83,7 @@
   border-radius: 6px;
   height: 26px;
   cursor: url("../../assets/images/pointing.png"), auto;
-  color: var(--mac-text);
+  color: var(--nxg-os-text);
   font-family: inherit;
 }
 
@@ -124,7 +132,7 @@
     height: 22px;
 
     &.active {
-      background: var(--mac-glass-solid);
+      background: var(--nxg-os-glass-solid);
       box-shadow: 0 0.5px 1.5px rgba(0, 0, 0, 0.18);
     }
   }
@@ -135,15 +143,15 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: var(--mac-search);
+  background: var(--nxg-os-search);
   border-radius: 7px;
   height: 26px;
   padding: 0 8px;
   min-width: 180px;
-  box-shadow: inset 0 0 0 0.5px var(--mac-hairline);
+  box-shadow: inset 0 0 0 0.5px var(--nxg-os-hairline);
 
   .search-ico {
-    color: var(--mac-muted);
+    color: var(--nxg-os-muted);
     font-size: 12px;
   }
 
@@ -154,10 +162,10 @@
     font-size: 12px;
     width: 140px;
     font-family: inherit;
-    color: var(--mac-text);
+    color: var(--nxg-os-text);
 
     &::placeholder {
-      color: var(--mac-muted);
+      color: var(--nxg-os-muted);
     }
   }
 }
@@ -170,8 +178,8 @@
 
 .fichiers-sidebar {
   width: 200px;
-  background: var(--mac-sidebar);
-  border-right: 0.5px solid var(--mac-hairline);
+  background: var(--nxg-os-sidebar);
+  border-right: 0.5px solid var(--nxg-os-hairline);
   padding: 12px 8px;
   overflow-y: auto;
   flex-shrink: 0;
@@ -180,7 +188,7 @@
 .side-label {
   font-size: 11px;
   font-weight: 600;
-  color: var(--mac-muted);
+  color: var(--nxg-os-muted);
   padding: 2px 8px 8px;
   letter-spacing: 0.01em;
 }
@@ -197,7 +205,7 @@
   border-radius: 7px;
   font-size: 13px;
   font-weight: 400;
-  color: var(--mac-text);
+  color: var(--nxg-os-text);
   font-family: inherit;
   cursor: url("../../assets/images/pointing.png"), auto;
   margin-bottom: 1px;
@@ -215,11 +223,11 @@
   }
 
   &:hover:not(.active) {
-    background: var(--mac-hover);
+    background: var(--nxg-os-hover);
   }
 
   &.active {
-    background: var(--mac-selection);
+    background: var(--nxg-os-selection);
     color: #fff;
   }
 }
@@ -237,9 +245,9 @@
   align-items: center;
   gap: 4px;
   padding: 8px 14px;
-  border-bottom: 0.5px solid var(--mac-hairline);
+  border-bottom: 0.5px solid var(--nxg-os-hairline);
   font-size: 12px;
-  color: var(--mac-muted);
+  color: var(--nxg-os-muted);
   flex-shrink: 0;
 
   .sep {
@@ -249,7 +257,7 @@
   .crumb {
     border: none;
     background: transparent;
-    color: var(--mac-selection);
+    color: var(--nxg-os-selection);
     font-size: 12px;
     font-family: inherit;
     cursor: url("../../assets/images/pointing.png"), auto;
@@ -266,7 +274,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 14px;
-  border-bottom: 0.5px solid var(--mac-hairline);
+  border-bottom: 0.5px solid var(--nxg-os-hairline);
 
   input {
     flex: 1;
@@ -276,15 +284,15 @@
     font-size: 13px;
     font-family: inherit;
     outline: none;
-    background: var(--mac-search);
-    color: var(--mac-text);
-    box-shadow: 0 0 0 2px var(--mac-selection);
+    background: var(--nxg-os-search);
+    color: var(--nxg-os-text);
+    box-shadow: 0 0 0 2px var(--nxg-os-selection);
   }
 }
 
 .empty-state {
   margin: auto;
-  color: var(--mac-muted);
+  color: var(--nxg-os-muted);
   font-size: 13px;
 }
 
@@ -311,7 +319,7 @@
 
   .icon-name {
     font-size: 11px;
-    color: var(--mac-text);
+    color: var(--nxg-os-text);
     word-break: break-word;
   }
 
@@ -319,7 +327,7 @@
     background: rgba(10, 132, 255, 0.22);
 
     .icon-name {
-      background: var(--mac-selection);
+      background: var(--nxg-os-selection);
       color: #fff;
       border-radius: 4px;
       padding: 1px 4px;
@@ -344,10 +352,10 @@
 
 .list-head {
   height: 28px;
-  border-bottom: 0.5px solid var(--mac-hairline);
+  border-bottom: 0.5px solid var(--nxg-os-hairline);
   font-size: 11px;
   font-weight: 600;
-  color: var(--mac-muted);
+  color: var(--nxg-os-muted);
   flex-shrink: 0;
 }
 
@@ -355,18 +363,18 @@
   height: 32px;
   border: none;
   background: transparent;
-  border-bottom: 0.5px solid var(--mac-hairline);
+  border-bottom: 0.5px solid var(--nxg-os-hairline);
   font-size: 13px;
-  color: var(--mac-text);
+  color: var(--nxg-os-text);
   font-family: inherit;
   cursor: url("../../assets/images/pointing.png"), auto;
 
   &:hover:not(.selected) {
-    background: var(--mac-hover);
+    background: var(--nxg-os-hover);
   }
 
   &.selected {
-    background: var(--mac-selection) !important;
+    background: var(--nxg-os-selection) !important;
     color: #fff;
     border-bottom-color: transparent;
   }
@@ -387,11 +395,11 @@
 .fichiers-status {
   height: 24px;
   background: transparent;
-  border-top: 0.5px solid var(--mac-hairline);
+  border-top: 0.5px solid var(--nxg-os-hairline);
   display: flex;
   align-items: center;
   padding: 0 12px;
   font-size: 11px;
-  color: var(--mac-muted);
+  color: var(--nxg-os-muted);
   flex-shrink: 0;
 }

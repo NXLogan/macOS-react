@@ -57,7 +57,19 @@ export default function PrefsEffects() {
     const onChange = () => applyThemeClass("auto");
     mq.addEventListener?.("change", onChange);
     return () => mq.removeEventListener?.("change", onChange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefs?.theme, prefs?.accent]);
+
+  // FiveM CEF: keep backdrop-filter off. Never enable live glass blur.
+  useEffect(() => {
+    document.documentElement.classList.remove("nxg-fx-glass");
+  }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const animations = state.settings?.animations !== false;
+    root.classList.toggle("nxg-reduce-motion", !animations);
+  }, [state.settings?.animations]);
 
   useEffect(() => {
     if (!prefs) return;
@@ -71,6 +83,7 @@ export default function PrefsEffects() {
     );
     shell.classList.add(`dock-pos-${prefs.dockPosition || "bottom"}`);
     shell.setAttribute("data-icon-size", prefs.dockIconSize || "medium");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefs?.dockPosition, prefs?.dockIconSize, state.session?.ready]);
 
   useEffect(() => {
@@ -94,6 +107,7 @@ export default function PrefsEffects() {
       if (timer) window.clearTimeout(timer);
       events.forEach((ev) => window.removeEventListener(ev, arm));
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefs?.autoLockMinutes, state.booting, state.locked, dispatch]);
 
   return null;

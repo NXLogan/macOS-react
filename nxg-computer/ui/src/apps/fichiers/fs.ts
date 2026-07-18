@@ -15,6 +15,7 @@ export type SidebarId =
   | "downloads"
   | "documents"
   | "desktop"
+  | "trash"
   | "disk";
 
 export const FS_STORAGE_KEY = "nxg-fichiers-fs-v1";
@@ -35,6 +36,7 @@ export const SPECIAL = {
   downloads: "folder-downloads",
   documents: "folder-documents",
   desktop: "folder-desktop",
+  trash: "folder-trash",
 } as const;
 
 export function createId(prefix = "node") {
@@ -70,6 +72,13 @@ export function buildDefaultFs(): FsNode[] {
     {
       id: SPECIAL.desktop,
       name: "Bureau",
+      kind: "folder",
+      parentId: SPECIAL.disk,
+      createdAt: now,
+    },
+    {
+      id: SPECIAL.trash,
+      name: "Corbeille",
       kind: "folder",
       parentId: SPECIAL.disk,
       createdAt: now,
@@ -121,6 +130,15 @@ export function saveFs(nodes: FsNode[]) {
   localStorage.setItem(fsScopeKey, JSON.stringify(sanitizeFs(nodes)));
 }
 
+/** Save + broadcast to desktop, Paramètres, memory. */
+export function commitFs(nodes: FsNode[]): FsNode[] {
+  const cleaned = sanitizeFs(nodes);
+  saveFs(cleaned);
+  window.dispatchEvent(new Event("nxg-fs-changed"));
+  window.dispatchEvent(new Event("nxg-memory-dirty"));
+  return cleaned;
+}
+
 export function getChildren(nodes: FsNode[], parentId: string) {
   return nodes
     .filter((n) => n.parentId === parentId)
@@ -154,11 +172,25 @@ export function sidebarTarget(id: SidebarId): string {
       return SPECIAL.documents;
     case "desktop":
       return SPECIAL.desktop;
+    case "trash":
+      return SPECIAL.trash;
     case "disk":
     case "recents":
     default:
       return SPECIAL.disk;
   }
+}
+
+export function removeNodeDeep(nodes: FsNode[], id: string): FsNode[] {
+  const toRemove = new Set<string>();
+  const walk = (nodeId: string) => {
+    toRemove.add(nodeId);
+    nodes.forEach((n) => {
+      if (n.parentId === nodeId) walk(n.id);
+    });
+  };
+  walk(id);
+  return nodes.filter((n) => !toRemove.has(n.id));
 }
 
 export function formatSize(bytes?: number) {

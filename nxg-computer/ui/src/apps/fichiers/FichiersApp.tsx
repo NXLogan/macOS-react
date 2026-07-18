@@ -9,7 +9,6 @@ import { store } from "../../App";
 import TrafficLights from "../../desktop/WindowChrome/TrafficLights";
 import AppWindowShell from "../../desktop/WindowChrome/AppWindowShell";
 import {
-  createId,
   fileIconLabel,
   formatDate,
   formatSize,
@@ -18,11 +17,16 @@ import {
   getNode,
   getPath,
   loadFs,
-  saveFs,
   SidebarId,
   sidebarTarget,
   SPECIAL,
 } from "./fs";
+import {
+  createFolder,
+  duplicateNode,
+  renameNode,
+  trashNode,
+} from "./fsApi";
 import "./FichiersApp.scss";
 
 const SIDEBAR: {
@@ -35,6 +39,7 @@ const SIDEBAR: {
   { id: "downloads", label: "Téléchargements", icon: "↓", color: "#0a84ff" },
   { id: "documents", label: "Documents", icon: "📄", color: "#64d2ff" },
   { id: "desktop", label: "Bureau", icon: "🖥", color: "#30d158" },
+  { id: "trash", label: "Corbeille", icon: "🗑", color: "#8e8e93" },
   { id: "disk", label: "Disque NXG", icon: "💾", color: "#ff9f0a" },
 ];
 
@@ -53,11 +58,7 @@ export default function FichiersApp() {
   const createInputRef = useRef<HTMLInputElement>(null);
 
   const open = Boolean(state.openApps?.fichiers);
-
-  useEffect(() => {
-    saveFs(nodes);
-    window.dispatchEvent(new Event("nxg-memory-dirty"));
-  }, [nodes]);
+  const filesAllowed = state.settings?.prefs?.permissions?.files !== false;
 
   useEffect(() => {
     const onFs = () => setNodes(loadFs());
@@ -71,6 +72,17 @@ export default function FichiersApp() {
 
   useEffect(() => {
     if (!open) return;
+    if (!filesAllowed) {
+      dispatch({ type: "apps/CLOSE", payload: "fichiers" });
+      window.dispatchEvent(
+        new CustomEvent("nxg-toast", {
+          detail: {
+            message: "Accès Fichiers désactivé — active-le dans Paramètres",
+          },
+        })
+      );
+      return;
+    }
     setNodes(loadFs());
     const startId = state.fichiersStartId;
     if (startId) {
@@ -81,7 +93,7 @@ export default function FichiersApp() {
       setSearch("");
       dispatch({ type: "fichiers/SET_START", payload: undefined });
     }
-  }, [open, state.fichiersStartId, dispatch]);
+  }, [open, state.fichiersStartId, dispatch, filesAllowed]);
 
   useEffect(() => {
     if (creating) createInputRef.current?.focus();
@@ -161,14 +173,8 @@ export default function FichiersApp() {
 
   const confirmCreateFolder = () => {
     const name = newName.trim() || "Nouveau dossier";
-    const folder: FsNode = {
-      id: createId("folder"),
-      name,
-      kind: "folder",
-      parentId: currentId,
-      createdAt: Date.now(),
-    };
-    setNodes((prev) => [...prev, folder]);
+    const { nodes: next, folder } = createFolder(currentId, name);
+    setNodes(next);
     setCreating(false);
     setSelectedId(folder.id);
   };
@@ -180,6 +186,164 @@ export default function FichiersApp() {
     }
   };
 
+  useEffect(() => {
+    if (!open) return;
+    const onCmd = (e: Event) => {
+      const detail = (e as CustomEvent).detail as {
+        cmd?: string;
+        payload?: unknown;
+      };
+      const cmd = detail?.cmd;
+      if (!cmd) return;
+
+      const selected = selectedId ? getNode(nodes, selectedId) : null;
+
+      switch (cmd) {
+        case "new-folder":
+          if (!(sidebar === "recents" && !search)) startCreateFolder();
+          break;
+        case "view":
+          if (detail.payload === "icons" || detail.payload === "list") {
+            setView(detail.payload);
+          }
+          break;
+        case "search-focus": {
+          const input = document.querySelector(
+            ".fichiers-window .search-box input"
+          ) as HTMLInputElement | null;
+          input?.focus();
+          input?.select();
+          break;
+        }
+        case "go-sidebar":
+          if (typeof detail.payload === "string") {
+            goSidebar(detail.payload as SidebarId);
+          }
+          break;
+        case "go-back":
+          goBack();
+          break;
+        case "go-forward":
+          goForward();
+          break;
+        case "open-selected":
+          if (selected) openItem(selected);
+          else
+            window.dispatchEvent(
+              new CustomEvent("nxg-toast", {
+                detail: { message: "Sélectionne un élément" },
+              })
+            );
+          break;
+        case "get-info":
+          if (selected) {
+            window.alert(
+              `${selected.name}\n\nType : ${
+                selected.kind === "folder" ? "Dossier" : "Fichier"
+              }\nCréé : ${formatDate(selected.createdAt)}${
+                selected.size ? `\nTaille : ${formatSize(selected.size)}` : ""
+              }`
+            );
+          } else {
+            window.alert(
+              `Dossier courant : ${currentFolder?.name ?? "—"}\n${
+                items.length
+              } élément(s)`
+            );
+          }
+          break;
+        case "rename": {
+          if (!selected) {
+            window.dispatchEvent(
+              new CustomEvent("nxg-toast", {
+                detail: { message: "Sélectionne un élément à renommer" },
+              })
+            );
+            break;
+          }
+          const next = window.prompt("Renommer", selected.name);
+          if (!next?.trim()) break;
+          setNodes(renameNode(selected.id, next.trim()));
+          break;
+        }
+        case "duplicate": {
+          if (!selected) break;
+          const { nodes: next, copy } = duplicateNode(selected.id);
+          setNodes(next);
+          if (copy) setSelectedId(copy.id);
+          break;
+        }
+        case "trash": {
+          if (!selected) break;
+          setNodes(trashNode(selected.id));
+          setSelectedId(null);
+          window.dispatchEvent(
+            new CustomEvent("nxg-toast", {
+              detail: {
+                message:
+                  selected.parentId === SPECIAL.trash
+                    ? `« ${selected.name} » supprimé`
+                    : `« ${selected.name} » dans la Corbeille`,
+              },
+            })
+          );
+          break;
+        }
+        case "select-all":
+          if (items[0]) setSelectedId(items[0].id);
+          break;
+        case "copy":
+        case "cut":
+          if (selected) {
+            void navigator.clipboard?.writeText(selected.name);
+            window.dispatchEvent(
+              new CustomEvent("nxg-toast", {
+                detail: {
+                  message:
+                    cmd === "cut"
+                      ? `« ${selected.name} » coupé (nom)`
+                      : `« ${selected.name} » copié`,
+                },
+              })
+            );
+          }
+          break;
+        case "paste":
+          window.dispatchEvent(
+            new CustomEvent("nxg-toast", {
+              detail: { message: "Collage simulé — crée un nouveau dossier" },
+            })
+          );
+          startCreateFolder();
+          break;
+        case "sort-name":
+          window.dispatchEvent(
+            new CustomEvent("nxg-toast", {
+              detail: { message: "Trié par nom (affichage)" },
+            })
+          );
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("nxg-fichiers-cmd", onCmd);
+    return () => window.removeEventListener("nxg-fichiers-cmd", onCmd);
+    // Handlers close over latest navigate/open state intentionally
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    open,
+    selectedId,
+    nodes,
+    sidebar,
+    search,
+    items,
+    currentFolder,
+    historyIndex,
+    history,
+  ]);
+
   if (!open) return null;
 
   return (
@@ -190,6 +354,12 @@ export default function FichiersApp() {
       windowClassName="fichiers-window"
       windowId="fichiers-window"
     >
+        <div
+          className="fichiers-window-hit"
+          onMouseDown={() =>
+            dispatch({ type: "onTop/SET", payload: "fichiers" })
+          }
+        >
         <div className="fichiers-titlebar" id="fichiers-handle">
           <TrafficLights appId="fichiers" onClose={closeApp} />
           <div className="fichiers-title">
@@ -372,6 +542,7 @@ export default function FichiersApp() {
           {selectedId
             ? ` — ${getNode(nodes, selectedId)?.name ?? ""} sélectionné`
             : ""}
+        </div>
         </div>
     </AppWindowShell>
   );

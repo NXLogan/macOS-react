@@ -94,5 +94,6 @@ export type MemorySession = {
 };
 
 export const MEMORY_VERSION = 1 as const;
-export const DEFAULT_COMPUTER_ID = "local-pc";
+/** Must match Config.DefaultComputerId in config/config.lua */
+export const DEFAULT_COMPUTER_ID = "default";
 export const DEFAULT_USER_ID = "local-user";

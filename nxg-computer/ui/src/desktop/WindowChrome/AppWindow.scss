@@ -169,8 +169,12 @@
   }
 
   /* Maximize: subtle settle so the size change reads clearly */
-  .nxg-drag-root.is-maximized:not(.is-opening):not(.is-closing) & {
+  .nxg-drag-root.is-max-pulse & {
     animation: nxg-win-maximize 0.38s cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+
+  .nxg-drag-root.is-unmax-pulse & {
+    animation: nxg-win-unmaximize 0.34s cubic-bezier(0.32, 0.72, 0, 1) both;
   }
 }
 
@@ -219,6 +223,17 @@
 }
 
 @keyframes nxg-win-maximize {
+  from {
+    filter: brightness(1.06);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+  }
+  to {
+    filter: brightness(1);
+    box-shadow: var(--nxg-os-shadow, 0 24px 80px rgba(0, 0, 0, 0.45));
+  }
+}
+
+@keyframes nxg-win-unmaximize {
   from {
     filter: brightness(1.04);
   }

@@ -74,7 +74,7 @@ export function createDefaultProfile(
       wallpaper: {
         src: "../../assets/images/catalina.jpg",
         preview: "../../assets/images/preview_catalina.jpg",
-        name: "Catalina",
+        name: "NXG Isles",
         surname: "catalina",
         custom: false,
       },
@@ -83,7 +83,7 @@ export function createDefaultProfile(
         dockPosition: "bottom",
         dockIconSize: "medium",
         accent: "blue",
-        deviceName: "NXG Computer",
+        deviceName: "NXGos",
         language: "fr",
         wifi: true,
         bluetooth: false,

@@ -1,6 +1,8 @@
 interface DropdownItemType {
-    name: string;
-    available: boolean;
+  id?: string;
+  name: string;
+  available: boolean;
+  shortcut?: string;
 }
 
 export default DropdownItemType;

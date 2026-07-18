@@ -29,7 +29,7 @@ export default function WallpaperWindow() {
 
   const currentPreview = isCustom
     ? wallpaper.src || wallpaper.preview
-    : wallpaper.name === "Catalina"
+    : wallpaper.surname === "catalina"
     ? require("../../assets/images/catalina_day.jpg")
     : resolveBundledWallpaper(wallpaper.surname);
 

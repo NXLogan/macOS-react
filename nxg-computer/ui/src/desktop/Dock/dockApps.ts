@@ -25,19 +25,35 @@ export type ContextMenuState = {
 export const APP_CATALOG: DockApp[] = [
   { id: "fichiers", name: "Fichiers", icon: "fichiers.png" },
   { id: "parametres", name: "Paramètres", icon: "parametres.png" },
-  { id: "photos", name: "Photos", icon: "photos.png" },
-  { id: "calculator", name: "Calculator", icon: "calculator.png" },
-  { id: "calendar", name: "Calendar", icon: "calendar.png" },
-  { id: "vscode", name: "VSCode", icon: "vscode.png" },
-  { id: "music", name: "Music", icon: "applemusic.png" },
-  { id: "weather", name: "Weather", icon: "weather.png" },
-  { id: "github", name: "GitHub", icon: "github.png" },
-  { id: "scalable", name: "Scalable", icon: "scalable.png" },
-  { id: "twitter", name: "Twitter", icon: "twitter.png" },
+  { id: "calculator", name: "Calculatrice", icon: "calculator.png" },
 ];
+
+/** Apps that can open a window today. */
+export const OPENABLE_APP_IDS = [
+  "fichiers",
+  "parametres",
+  "calculator",
+] as const;
+
+export type OpenableAppId = (typeof OPENABLE_APP_IDS)[number];
+
+export function isOpenableAppId(id: string): id is OpenableAppId {
+  return (OPENABLE_APP_IDS as readonly string[]).includes(id);
+}
 
 /** Apps that must stay available in the dock unless explicitly on the desktop. */
 export const PINNED_CORE_APPS = ["fichiers", "parametres"] as const;
+
+/** Drop unknown / stub app ids left over from older catalogs. */
+export function sanitizeDockApps(dockApps: DockApp[]): DockApp[] {
+  const map = catalogMap();
+  return dockApps
+    .map((app) => {
+      const id = app.id === "finder" ? "fichiers" : app.id;
+      return map.get(id) || null;
+    })
+    .filter((a): a is DockApp => Boolean(a));
+}
 
 export function ensureCoreDockApps(
   dockApps: DockApp[],
@@ -47,7 +63,7 @@ export function ensureCoreDockApps(
   const onDesktop = new Set(
     desktopIcons.filter((i) => i.kind !== "folder").map((i) => i.id)
   );
-  const next = [...dockApps];
+  const next = sanitizeDockApps(dockApps);
   const present = new Set(next.map((a) => a.id));
 
   for (const id of PINNED_CORE_APPS) {
@@ -160,19 +176,25 @@ export function saveDockOrder(apps: DockApp[]) {
 
 export function isOverDock(clientX: number, clientY: number) {
   const dock = document.querySelector(".dock");
-  if (!dock) {
-    return clientY >= window.innerHeight - 110;
-  }
+  if (!dock) return false;
   const r = dock.getBoundingClientRect();
-  const padX = 28;
-  const padTop = 64;
-  const padBottom = 28;
+  // Strict hitbox — only the real dock bar (not the whole bottom strip / corners)
+  const pad = 10;
   return (
-    clientX >= r.left - padX &&
-    clientX <= r.right + padX &&
-    clientY >= r.top - padTop &&
-    clientY <= r.bottom + padBottom
+    clientX >= r.left - pad &&
+    clientX <= r.right + pad &&
+    clientY >= r.top - pad &&
+    clientY <= r.bottom + pad
   );
+}
+
+/** Only real catalog apps can move from desktop → Dock (never folders). */
+export function canDockDesktopIcon(icon: {
+  id: string;
+  kind?: string;
+}): boolean {
+  if (icon.kind === "folder") return false;
+  return APP_CATALOG.some((a) => a.id === icon.id);
 }
 
 /** Index at which to insert an app based on pointer X over the dock. */
@@ -187,15 +209,48 @@ export function dockInsertIndex(clientX: number): number {
   return items.length;
 }
 
+const ICON_W = 84;
+const ICON_H = 92;
+
+/** Free placement anywhere on the desktop; only nudges if sitting under the dock bar. */
 export function snapDesktopPosition(x: number, y: number) {
-  const minX = 24;
-  const minY = 48;
-  const maxX = window.innerWidth - 100;
-  const maxY = window.innerHeight - 140;
-  return {
-    x: Math.max(minX, Math.min(maxX, x)),
-    y: Math.max(minY, Math.min(maxY, y)),
-  };
+  const minX = 8;
+  const minY = 40;
+  const maxX = Math.max(minX, window.innerWidth - ICON_W - 8);
+  const maxY = Math.max(minY, window.innerHeight - ICON_H - 8);
+
+  let nx = Math.max(minX, Math.min(maxX, x));
+  let ny = Math.max(minY, Math.min(maxY, y));
+
+  const dock = document.querySelector(".dock");
+  if (dock) {
+    const r = dock.getBoundingClientRect();
+    const overlaps =
+      nx + ICON_W > r.left &&
+      nx < r.right &&
+      ny + ICON_H > r.top &&
+      ny < r.bottom;
+
+    if (overlaps) {
+      const above = r.top - ICON_H - 6;
+      const left = r.left - ICON_W - 6;
+      const right = r.right + 6;
+
+      // Prefer the side the user aimed for (corners stay in corners)
+      const mid = (r.left + r.right) / 2;
+      if (x + ICON_W / 2 < mid && left >= minX) {
+        nx = Math.max(minX, Math.min(maxX, left));
+        ny = Math.max(minY, Math.min(maxY, y));
+      } else if (x + ICON_W / 2 >= mid && right <= maxX) {
+        nx = Math.max(minX, Math.min(maxX, right));
+        ny = Math.max(minY, Math.min(maxY, y));
+      } else if (above >= minY) {
+        ny = above;
+      }
+    }
+  }
+
+  return { x: nx, y: ny };
 }
 
 export function cleanupDesktopGrid(icons: DesktopIcon[]): DesktopIcon[] {

@@ -2,17 +2,27 @@ Config = Config or {}
 
 --[[
   Desktop apps registry (LB Phone–style).
-  UI lives in ui/src/apps/<id>/ — wire each app here when ready.
+  UI lives in ui/src/apps/<id>/ — keep in sync with APP_CATALOG / OPENABLE_APP_IDS.
 ]]
 Config.Apps = {
-    --[[
-    finder = {
-        name = 'Finder',
-        icon = 'finder',
+    fichiers = {
+        name = 'Fichiers',
+        icon = 'fichiers',
         default = true,
         removable = false,
     },
-    ]]
+    parametres = {
+        name = 'Paramètres',
+        icon = 'parametres',
+        default = true,
+        removable = false,
+    },
+    calculator = {
+        name = 'Calculatrice',
+        icon = 'calculator',
+        default = true,
+        removable = true,
+    },
 }
 
 Config.CustomApps = {}

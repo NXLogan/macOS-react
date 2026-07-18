@@ -1,4 +1,4 @@
--- NXG Computer — persistent profiles (per PC + player)
+-- NXGos — persistent profiles (per PC + player)
 
 CREATE TABLE IF NOT EXISTS `nxg_computer_profiles` (
   `id` INT NOT NULL AUTO_INCREMENT,

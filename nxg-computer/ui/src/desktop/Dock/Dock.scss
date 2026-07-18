@@ -8,7 +8,7 @@
   justify-content: center;
   align-items: flex-end;
   pointer-events: none;
-  z-index: 15;
+  z-index: 14;
   transition: inset 0.25s ease, opacity 0.2s ease, transform 0.2s ease;
 
   &.dock-pos-bottom {
@@ -126,7 +126,7 @@
   transform: none;
   backdrop-filter: var(--nxg-blur);
   overflow: visible !important;
-  z-index: 15;
+  z-index: 20;
   list-style: none;
   transition: box-shadow 0.2s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -205,7 +205,7 @@
     transform: scale(1.04);
   }
 
-  .finder {
+  .is-fichiers {
     margin-right: 1px;
   }
 

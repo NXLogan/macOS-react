@@ -5,14 +5,11 @@ import toggleWallpaperVis from "../../utils/helpers/toggleWallpaperVis";
 import {
   cleanupDesktopGrid,
   DesktopIcon,
+  isOpenableAppId,
   snapDesktopPosition,
 } from "../Dock/dockApps";
-import {
-  createId,
-  loadFs,
-  saveFs,
-  SPECIAL,
-} from "../../apps/fichiers/fs";
+import { SPECIAL } from "../../apps/fichiers/fs";
+import { createFolder, renameNode, trashNode } from "../../apps/fichiers/fsApi";
 import "./ContextMenu.scss";
 
 type MenuItem =
@@ -62,7 +59,7 @@ export default function ContextMenu() {
     let nextX = x;
     let nextY = y;
 
-    // Stick to cursor, open toward the right / bottom (macOS-like)
+    // Stick to cursor, open toward the right / bottom
     if (nextX + rect.width > window.innerWidth - 8) {
       nextX = Math.max(8, x - rect.width);
     }
@@ -90,49 +87,23 @@ export default function ContextMenu() {
 
   const createDesktopFolder = () => {
     const typed = window.prompt("Nom du dossier", "Nouveau dossier");
-    // Cancel
     if (typed === null) return;
 
-    const nodes = loadFs();
     const base = typed.trim() || "Nouveau dossier";
-    const existingNames = new Set(
-      nodes
-        .filter((n) => n.parentId === SPECIAL.desktop && n.kind === "folder")
-        .map((n) => n.name)
-    );
-    let name = base;
-    if (existingNames.has(name)) {
-      let i = 2;
-      while (existingNames.has(`${base} ${i}`)) i += 1;
-      name = `${base} ${i}`;
-    }
-
-    const folderId = createId("folder");
-    nodes.push({
-      id: folderId,
-      name,
-      kind: "folder",
-      parentId: SPECIAL.desktop,
-      createdAt: Date.now(),
-    });
-    saveFs(nodes);
-
+    const { folder } = createFolder(SPECIAL.desktop, base);
     const pos = snapDesktopPosition(x + 12, y + 12);
     dispatch({
       type: "desktop/ADD_ICON",
       payload: {
-        id: `desktop-folder-${folderId}`,
-        name,
+        id: `desktop-folder-${folder.id}`,
+        name: folder.name,
         icon: "fichiers.png",
         kind: "folder",
-        folderId,
+        folderId: folder.id,
         x: pos.x,
         y: pos.y,
       },
     });
-    window.dispatchEvent(new Event("nxg-fs-changed"));
-    window.dispatchEvent(new Event("nxg-memory-dirty"));
-    // Do NOT open Fichiers — folder only appears on the desktop (+ synced FS)
   };
 
   const run = (action: string, e: React.MouseEvent) => {
@@ -184,8 +155,8 @@ export default function ContextMenu() {
             payload: "fichiers",
             folderId: icon.folderId,
           });
-        } else if (icon.id === "fichiers") {
-          dispatch({ type: "apps/OPEN", payload: "fichiers" });
+        } else if (isOpenableAppId(icon.id)) {
+          dispatch({ type: "apps/OPEN", payload: icon.id });
         }
         break;
       case "get-info-icon":
@@ -208,11 +179,7 @@ export default function ContextMenu() {
           ),
         });
         if (icon.kind === "folder" && icon.folderId) {
-          const nodes = loadFs().map((n) =>
-            n.id === icon.folderId ? { ...n, name } : n
-          );
-          saveFs(nodes);
-          window.dispatchEvent(new Event("nxg-fs-changed"));
+          renameNode(icon.folderId, name);
         }
         break;
       }
@@ -225,11 +192,7 @@ export default function ContextMenu() {
             payload: { id: icon.id, name: icon.name, icon: icon.icon },
           });
         } else if (icon.folderId) {
-          const nodes = loadFs().filter(
-            (n) => n.id !== icon.folderId && n.parentId !== icon.folderId
-          );
-          saveFs(nodes);
-          window.dispatchEvent(new Event("nxg-fs-changed"));
+          trashNode(icon.folderId);
         }
         break;
       default:

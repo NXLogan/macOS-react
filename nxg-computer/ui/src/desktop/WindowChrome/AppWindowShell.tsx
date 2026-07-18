@@ -41,7 +41,9 @@ export default function AppWindowShell({
   const [opening, setOpening] = useState(true);
   const [closing, setClosing] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const [maxPulse, setMaxPulse] = useState(false);
   const wasMinimized = useRef(minimized);
+  const wasMaximized = useRef(maximized);
   const nodeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -59,6 +61,15 @@ export default function AppWindowShell({
     }
     wasMinimized.current = minimized;
   }, [minimized]);
+
+  useEffect(() => {
+    if (wasMaximized.current !== maximized) {
+      setMaxPulse(true);
+      const t = window.setTimeout(() => setMaxPulse(false), 400);
+      wasMaximized.current = maximized;
+      return () => window.clearTimeout(t);
+    }
+  }, [maximized]);
 
   useEffect(() => {
     const onCloseRequest = (e: Event) => {
@@ -79,6 +90,7 @@ export default function AppWindowShell({
     closing ? "is-closing" : "",
     opening ? "is-opening" : "",
     restoring ? "is-restoring" : "",
+    maxPulse ? (maximized ? "is-max-pulse" : "is-unmax-pulse") : "",
   ]
     .filter(Boolean)
     .join(" ");

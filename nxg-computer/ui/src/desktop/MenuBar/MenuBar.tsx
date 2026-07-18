@@ -1,36 +1,57 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { store } from "../../App";
 import "./MenuBar.scss";
 import { ReactComponent as Settings } from "../../assets/images/svg/settings.svg";
 import DropdownMenu from "../DropdownMenu/DropdownMenu";
 import ControlCenter from "../ControlCenter/ControlCenter";
+import { frontAppId } from "./menuActions";
+import getDate from "../../utils/helpers/getDate";
 
 const MENU_ITEMS: { id: string; label: string; bold?: boolean }[] = [
-  { id: "finder", label: "Fichiers", bold: true },
-  { id: "file", label: "File" },
-  { id: "edit", label: "Edit" },
-  { id: "view", label: "View" },
-  { id: "go", label: "Go" },
-  { id: "windows", label: "Window" },
-  { id: "help", label: "Help" },
+  { id: "fichiers", label: "Fichiers", bold: true },
+  { id: "file", label: "Fichier" },
+  { id: "edit", label: "Édition" },
+  { id: "view", label: "Présentation" },
+  { id: "go", label: "Aller" },
+  { id: "windows", label: "Fenêtre" },
+  { id: "help", label: "Aide" },
 ];
 
 export default function MenuBar() {
   const [state, dispatch] = useContext(store);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [clock, setClock] = useState(() => getDate());
+  const front = frontAppId(state);
+
+  const appLabel =
+    front === "parametres"
+      ? "Paramètres"
+      : front === "calculator"
+      ? "Calculatrice"
+      : "Fichiers";
 
   useEffect(() => {
-    dispatch({ type: "date/SET" });
-    const id = window.setInterval(() => {
-      dispatch({ type: "date/SET" });
-    }, 60000);
+    const id = window.setInterval(() => setClock(getDate()), 30000);
     return () => window.clearInterval(id);
-  }, [dispatch]);
+  }, []);
+
+  useEffect(() => {
+    const onToast = (e: Event) => {
+      const msg = (e as CustomEvent).detail?.message;
+      if (!msg) return;
+      setToastMsg(String(msg));
+      window.setTimeout(() => setToastMsg(null), 2200);
+    };
+    window.addEventListener("nxg-toast", onToast);
+    return () => window.removeEventListener("nxg-toast", onToast);
+  }, []);
 
   const selectSection = (id: string) => {
-    dispatch({
-      type: "section/SELECT",
-      payload: id,
-    });
+    if (state.section === id) {
+      dispatch({ type: "section/RESET" });
+      return;
+    }
+    dispatch({ type: "section/SELECT", payload: id });
   };
 
   const toggleSettings = () => {
@@ -53,8 +74,8 @@ export default function MenuBar() {
           onClick={() => selectSection("logo")}
         >
           <img
-            alt="NXG"
-            className="apple"
+            alt="NXGos"
+            className="nxg-logo"
             src={require("../../assets/images/nxg-menubar.png")}
           />
           {state.section === "logo" ? <DropdownMenu /> : null}
@@ -63,26 +84,50 @@ export default function MenuBar() {
         {MENU_ITEMS.map((item) => (
           <div
             key={item.id}
-            className={`section ${item.bold ? "finder" : ""} ${
+            className={`section ${item.bold ? "fichiers-menu app-menu" : ""} ${
               state.section === item.id ? "is-selected" : ""
             }`}
             id={item.id}
             onClick={() => selectSection(item.id)}
           >
-            {item.label}
+            {item.bold ? appLabel : item.label}
             {state.section === item.id ? <DropdownMenu /> : null}
           </div>
         ))}
 
         <div className="right">
+          <div className="status-pills" aria-hidden>
+            <span
+              className={`status-pill ${
+                state.settings.prefs?.wifi ? "is-on" : "is-off"
+              }`}
+              title={state.settings.prefs?.wifi ? "Wi‑Fi" : "Wi‑Fi désactivé"}
+            >
+              Wi‑Fi
+            </span>
+            <span
+              className={`status-pill ${
+                state.settings.prefs?.bluetooth ? "is-on" : "is-off"
+              }`}
+              title={
+                state.settings.prefs?.bluetooth
+                  ? "Bluetooth"
+                  : "Bluetooth désactivé"
+              }
+            >
+              BT
+            </span>
+          </div>
           <div className="setting set">
             <Settings className="settings set" onClick={toggleSettings} />
             <ControlCenter />
           </div>
-          <h3 className="date">{state.date[0]}</h3>
-          <h3>{state.date[1]}</h3>
+          <h3 className="date">{clock[0]}</h3>
+          <h3>{clock[1]}</h3>
         </div>
       </div>
+
+      {toastMsg ? <div className="nxg-menubar-toast">{toastMsg}</div> : null}
     </>
   );
 }

@@ -56,7 +56,7 @@ export default function TrafficLights({ appId, onClose }: Props) {
         className="dot yellow"
         onClick={minimize}
         aria-label="Réduire"
-        title="Réduire dans le Dock"
+        title="Réduire dans la barre"
       >
         <Minimize className="ico" />
       </button>

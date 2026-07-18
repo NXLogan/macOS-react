@@ -64,6 +64,34 @@
       color: var(--nxg-muted);
     }
 
+    .status-pills {
+      display: flex;
+      gap: 4px;
+      margin-right: 10px;
+    }
+
+    .status-pill {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--nxg-border);
+      text-transform: none;
+      opacity: 0.85;
+    }
+
+    .status-pill.is-on {
+      color: var(--nxg-text);
+      background: var(--nxg-accent-soft);
+      border-color: rgba(200, 245, 66, 0.28);
+    }
+
+    .status-pill.is-off {
+      color: var(--nxg-muted);
+      opacity: 0.45;
+    }
+
     .setting {
       position: relative;
       display: flex;
@@ -122,7 +150,7 @@
   color: var(--nxg-text);
 }
 
-.finder {
+.fichiers-menu {
   font-weight: 600;
 }
 
@@ -132,10 +160,42 @@
   height: 24px;
 }
 
-.apple {
+.nxg-logo {
   height: 15px;
   width: auto;
   object-fit: contain;
   display: block;
   pointer-events: none;
 }
+
+.nxg-menubar-toast {
+  position: fixed;
+  top: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 90;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--nxg-font);
+  color: #fff;
+  background: rgba(28, 28, 30, 0.92);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: var(--nxg-blur);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  animation: nxg-toast-in 0.2s ease both;
+}
+
+@keyframes nxg-toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+

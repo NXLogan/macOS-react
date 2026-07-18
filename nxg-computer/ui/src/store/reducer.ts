@@ -1,7 +1,18 @@
-import { AnyAction } from "@reduxjs/toolkit";
 import initialState from "./initialState";
 import getDate from "../utils/helpers/getDate";
-import { ensureCoreDockApps } from "../desktop/Dock/dockApps";
+import {
+  ensureCoreDockApps,
+  APP_CATALOG,
+  PINNED_CORE_APPS,
+  sanitizeDockApps,
+} from "../desktop/Dock/dockApps";
+
+type AnyAction = {
+  type: string;
+  payload?: any;
+  index?: number;
+  [key: string]: any;
+};
 
 const reducer = (state = initialState, action: AnyAction) => {
   switch (action.type) {
@@ -40,12 +51,34 @@ const reducer = (state = initialState, action: AnyAction) => {
         ...state,
         dockApps: action.payload,
       };
-    case "dock/REMOVE":
+    case "dock/REMOVE": {
+      const id = action.payload as string;
+      const onDesktop = state.desktopIcons.some(
+        (icon) => icon.id === id && icon.kind !== "folder"
+      );
+      if (
+        (PINNED_CORE_APPS as readonly string[]).includes(id) &&
+        !onDesktop
+      ) {
+        return state;
+      }
       return {
         ...state,
-        dockApps: state.dockApps.filter((app) => app.id !== action.payload),
+        dockApps: ensureCoreDockApps(
+          state.dockApps.filter((app) => app.id !== id),
+          state.desktopIcons
+        ),
       };
+    }
     case "dock/ADD":
+      // Never pin folders / unknown icons into the Dock
+      if (
+        typeof action.payload?.id !== "string" ||
+        action.payload.id.startsWith("desktop-folder-") ||
+        !APP_CATALOG.some((a) => a.id === action.payload.id)
+      ) {
+        return state;
+      }
       if (state.dockApps.some((app) => app.id === action.payload.id)) {
         return state;
       }
@@ -133,14 +166,26 @@ const reducer = (state = initialState, action: AnyAction) => {
           open: true,
         },
       };
-    case "settings/SETCOLOR":
+    case "settings/SETCOLOR": {
+      const color = action.payload as string;
+      const accent =
+        color === "babyblue"
+          ? "blue"
+          : color === "violet"
+          ? "purple"
+          : color;
       return {
         ...state,
         settings: {
           ...state.settings,
-          color: action.payload,
+          color,
+          prefs: {
+            ...state.settings.prefs,
+            accent: accent as typeof state.settings.prefs.accent,
+          },
         },
       };
+    }
     case "settings/AIRDROP":
       return {
         ...state,
@@ -229,6 +274,7 @@ const reducer = (state = initialState, action: AnyAction) => {
       };
       return {
         ...state,
+        onTop: appId || state.onTop,
         openApps: {
           ...state.openApps,
           [appId]: true,
@@ -292,6 +338,7 @@ const reducer = (state = initialState, action: AnyAction) => {
       };
       return {
         ...state,
+        onTop: action.payload,
         windowChrome: {
           ...state.windowChrome,
           [action.payload]: {
@@ -317,17 +364,25 @@ const reducer = (state = initialState, action: AnyAction) => {
           targetId: action.payload.targetId,
         },
       };
-    case "prefs/PATCH":
+    case "prefs/PATCH": {
+      const payload = action.payload || {};
+      const nextPrefs = {
+        ...state.settings.prefs,
+        ...payload,
+      };
+      const nextColor =
+        typeof payload.accent === "string"
+          ? payload.accent
+          : state.settings.color;
       return {
         ...state,
         settings: {
           ...state.settings,
-          prefs: {
-            ...state.settings.prefs,
-            ...action.payload,
-          },
+          color: nextColor,
+          prefs: nextPrefs,
         },
       };
+    }
     case "prefs/SET":
       return {
         ...state,
@@ -344,11 +399,25 @@ const reducer = (state = initialState, action: AnyAction) => {
           ...action.payload,
         },
       };
+    case "memory/SESSION": {
+      const { computerId, userId, userName } = action.payload;
+      return {
+        ...state,
+        session: {
+          ...state.session,
+          computerId,
+          userId,
+          userName: userName || state.session.userName,
+        },
+      };
+    }
     case "memory/HYDRATE": {
       const { session, profile } = action.payload;
       const desktopIcons = profile.desktopIcons ?? [];
       const dockApps = ensureCoreDockApps(
-        profile.dockApps?.length ? profile.dockApps : state.dockApps,
+        sanitizeDockApps(
+          profile.dockApps?.length ? profile.dockApps : state.dockApps
+        ),
         desktopIcons
       );
       return {

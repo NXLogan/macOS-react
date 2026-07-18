@@ -48,6 +48,7 @@ export default function Desktop({ children }: any) {
     if (target.closest(".nav-bar")) return;
     if (target.closest(".fichiers-window")) return;
     if (target.closest(".parametres-window")) return;
+    if (target.closest(".calculator-window")) return;
     if (target.closest(".wallpaper-menu")) return;
     if (target.closest(".context-menu")) return;
 
@@ -63,10 +64,14 @@ export default function Desktop({ children }: any) {
 
   useEffect(() => {
     // Wallpaper / color / profile come from MemoryBootstrap.
-    // Only preload wallpaper thumbnails here.
+    // Preload bundled wallpaper files via require (not broken relative strings).
     wallpapers.forEach((picture) => {
-      const img = new Image();
-      img.src = picture.src;
+      try {
+        const img = new Image();
+        img.src = require(`../../assets/images/${picture.surname}.jpg`);
+      } catch {
+        /* missing asset */
+      }
     });
   }, []);
 
@@ -94,12 +99,11 @@ export default function Desktop({ children }: any) {
           <motion.div
             key="desktop-shell"
             className="desktop-shell"
-            initial={{ opacity: 0, scale: 1.06, filter: "blur(16px)" }}
-            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            initial={{ opacity: 0, scale: 1.02 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{
-              duration: 0.85,
+              duration: 0.45,
               ease: [0.22, 1, 0.36, 1],
-              delay: 0.05,
             }}
           >
             <DesktopMarquee />

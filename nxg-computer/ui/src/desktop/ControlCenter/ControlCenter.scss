@@ -3,7 +3,7 @@
   backdrop-filter: var(--nxg-blur);
   border: 1px solid var(--nxg-border-strong);
   border-radius: var(--nxg-radius-lg);
-  height: 360px;
+  height: 400px;
   width: 312px;
   box-sizing: border-box;
   position: absolute;
@@ -212,4 +212,23 @@
   visibility: hidden;
   transform: translateY(-6px);
   pointer-events: none;
+}
+
+.cc-open-settings {
+  margin-top: auto;
+  border: 1px solid var(--nxg-border);
+  border-radius: var(--nxg-radius);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--nxg-text);
+  font-family: var(--nxg-font);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 10px;
+  cursor: url("../../assets/images/pointing.png"), auto;
+  transition: 0.2s background, 0.2s border-color;
+
+  &:hover {
+    background: var(--nxg-accent-soft);
+    border-color: rgba(200, 245, 66, 0.35);
+  }
 }

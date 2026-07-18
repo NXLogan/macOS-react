@@ -1,529 +1,263 @@
 import DropdownItemType from "../../store/types/DropdownItemType";
-import DropdownItem from "../../store/types/DropdownItemType";
 import storeType from "../../store/types/store";
+import { frontAppId, MenuActionId } from "../../desktop/MenuBar/menuActions";
 
-const getDropdownContent = (state: storeType) => {
-  let content: DropdownItemType[] = [];
+type Item = DropdownItemType & { id?: MenuActionId; shortcut?: string };
+
+const d = (): Item => ({ name: "divider", available: false });
+
+const getDropdownContent = (state: storeType): Item[] => {
+  const front = frontAppId(state);
+  const fichiersOpen = Boolean(state.openApps?.fichiers);
+  const fichiersActive =
+    fichiersOpen && !state.windowChrome?.fichiers?.minimized;
+  const hasFront = Boolean(front);
+  const canWin = hasFront;
+
   switch (state.section) {
     case "logo":
-      content = [
+      return [
+        { id: "about-nxgos", name: "À propos de NXGos", available: true },
+        d(),
+        { id: "open-settings", name: "Paramètres NXGos…", available: true },
+        { id: "store", name: "Boutique NXG", available: true },
+        d(),
+        { id: "recent-items", name: "Éléments récents", available: true },
+        d(),
         {
-          name: "About NXG Computer",
-          available: true,
+          id: "force-quit",
+          name: "Forcer la fermeture",
+          available: hasFront,
+          shortcut: "⌥⌘Esc",
         },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "System Preferences",
-          available: true,
-        },
-        {
-          name: "App Store",
-          available: true,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Recent Items",
-          available: true,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Force Quit",
-          available: true,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Sleep",
-          available: true,
-        },
-        {
-          name: "Restart",
-          available: true,
-        },
-        {
-          name: "Shut Down",
-          available: true,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Lock Screen",
-          available: true,
-        },
-        {
-          name: "Log Out User",
-          available: true,
-        },
+        d(),
+        { id: "sleep", name: "Veille", available: true },
+        { id: "restart", name: "Redémarrer…", available: true },
+        { id: "shutdown", name: "Éteindre…", available: true },
+        d(),
+        { id: "lock", name: "Verrouiller l’écran", available: true },
+        { id: "logout", name: "Se déconnecter…", available: true },
       ];
-      break;
-    case "finder":
-      content = [
+    case "fichiers":
+      return [
+        { id: "about-fichiers", name: "À propos de Fichiers", available: true },
+        d(),
+        { id: "fichiers-prefs", name: "Préférences…", available: true },
+        d(),
+        { id: "empty-trash", name: "Vider la corbeille", available: true },
+        d(),
         {
-          name: "About Fichiers",
-          available: true,
+          id: "hide-fichiers",
+          name: "Masquer Fichiers",
+          available: fichiersActive,
         },
         {
-          name: "divider",
-          available: false,
+          id: "hide-others",
+          name: "Masquer les autres",
+          available: hasFront,
         },
-        {
-          name: "Preferences",
-          available: true,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Empty Trash",
-          available: true,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Hide Fichiers",
-          available: true,
-        },
-        {
-          name: "Hide Others",
-          available: true,
-        },
-        {
-          name: "Show All",
-          available: false,
-        },
+        { id: "show-all", name: "Tout afficher", available: true },
       ];
-      break;
     case "file":
-      content = [
+      return [
+        { id: "new-fichiers", name: "Nouvelle fenêtre Fichiers", available: true },
         {
-          name: "New Fichiers Window",
+          id: "new-folder",
+          name: "Nouveau dossier",
           available: true,
+          shortcut: "⇧⌘N",
         },
         {
-          name: "New Folder",
+          name: "Nouveau dossier intelligent",
+          available: false,
+        },
+        d(),
+        {
+          id: "open-selected",
+          name: "Ouvrir",
+          available: fichiersActive,
+          shortcut: "⌘O",
+        },
+        { name: "Ouvrir avec", available: false },
+        { name: "Imprimer", available: false },
+        {
+          id: "close-window",
+          name: "Fermer la fenêtre",
+          available: canWin,
+          shortcut: "⌘W",
+        },
+        d(),
+        {
+          id: "get-info",
+          name: "Obtenir des infos",
+          available: fichiersActive,
+          shortcut: "⌘I",
+        },
+        {
+          id: "rename",
+          name: "Renommer",
+          available: fichiersActive,
+        },
+        {
+          id: "duplicate",
+          name: "Dupliquer",
+          available: fichiersActive,
+          shortcut: "⌘D",
+        },
+        { name: "Créer un alias", available: false },
+        {
+          id: "trash",
+          name: "Déplacer vers la corbeille",
+          available: fichiersActive,
+          shortcut: "⌘⌫",
+        },
+        { name: "Éjecter", available: false },
+        d(),
+        {
+          id: "search",
+          name: "Rechercher",
           available: true,
-        },
-        {
-          name: "New Folder with Selection",
-          available: false,
-        },
-        {
-          name: "New Smart Folder",
-          available: true,
-        },
-        {
-          name: "New tab",
-          available: true,
-        },
-        {
-          name: "Open",
-          available: false,
-        },
-        {
-          name: "Open With",
-          available: false,
-        },
-        {
-          name: "Print",
-          available: false,
-        },
-        {
-          name: "Close Window",
-          available: false,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Get Info",
-          available: true,
-        },
-        {
-          name: "Rename",
-          available: false,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Compress",
-          available: false,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Duplicate",
-          available: false,
-        },
-        {
-          name: "Make Alias",
-          available: false,
-        },
-        {
-          name: "Quick Look",
-          available: false,
-        },
-        {
-          name: "Show Original",
-          available: false,
-        },
-        {
-          name: "Add to Sidebar",
-          available: false,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Move to Trash",
-          available: false,
-        },
-        {
-          name: "Eject",
-          available: false,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Find",
-          available: true,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Tags...",
-          available: false,
+          shortcut: "⌘F",
         },
       ];
-      break;
     case "edit":
-      content = [
+      return [
+        { id: "undo", name: "Annuler", available: true, shortcut: "⌘Z" },
+        { id: "redo", name: "Rétablir", available: true, shortcut: "⇧⌘Z" },
+        d(),
         {
-          name: "Undo",
-          available: false,
+          id: "cut",
+          name: "Couper",
+          available: fichiersActive,
+          shortcut: "⌘X",
         },
         {
-          name: "Redo",
-          available: false,
+          id: "copy",
+          name: "Copier",
+          available: fichiersActive,
+          shortcut: "⌘C",
         },
         {
-          name: "divider",
-          available: false,
+          id: "paste",
+          name: "Coller",
+          available: fichiersActive,
+          shortcut: "⌘V",
         },
         {
-          name: "Cut",
-          available: false,
+          id: "select-all",
+          name: "Sélectionner tout",
+          available: fichiersActive,
+          shortcut: "⌘A",
         },
-        {
-          name: "Copy",
-          available: false,
-        },
-        {
-          name: "Paste",
-          available: false,
-        },
-        {
-          name: "Select All",
-          available: false,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Show Clipboard",
-          available: true,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Start Dictation",
-          available: true,
-        },
-        {
-          name: "Emoji & Symbols",
-          available: true,
-        },
+        d(),
+        { id: "clipboard", name: "Afficher le presse-papiers", available: true },
+        { name: "Démarrer Dictée", available: false },
+        { id: "emoji", name: "Emojis et symboles", available: true },
       ];
-      break;
     case "view":
-      content = [
+      return [
         {
-          name: "As Icons",
-          available: false,
-        },
-        {
-          name: "As List",
-          available: false,
-        },
-        {
-          name: "As Columns",
-          available: false,
-        },
-        {
-          name: "As Gallery",
-          available: false,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Use Stacks",
+          id: "view-icons",
+          name: "en icônes",
           available: true,
         },
         {
-          name: "Sort By",
+          id: "view-list",
+          name: "en liste",
           available: true,
         },
         {
-          name: "Clean Up",
-          available: false,
-        },
-        {
-          name: "Clean Up By",
-          available: false,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Hide Sidebar",
-          available: false,
-        },
-        {
-          name: "Show Preview",
-          available: false,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Hide Toolbar",
-          available: false,
-        },
-        {
-          name: "Show All Tabs",
-          available: false,
-        },
-        {
-          name: "Show Tab Bar",
-          available: false,
-        },
-        {
-          name: "Show Path Bar",
-          available: false,
-        },
-        {
-          name: "Show Status Bar",
-          available: false,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Customize Toolbar...",
-          available: false,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Show View Options",
+          id: "view-columns",
+          name: "en colonnes",
           available: true,
         },
         {
-          name: "Show Preview Options",
+          id: "view-gallery",
+          name: "en galerie",
+          available: true,
+        },
+        d(),
+        { id: "sort-name", name: "Trier par nom", available: true },
+        { id: "cleanup", name: "Ranger le Bureau", available: true },
+        d(),
+        {
+          name: "Afficher la barre latérale",
           available: false,
         },
         {
-          name: "divider",
+          name: "Afficher la barre de chemin",
           available: false,
         },
         {
-          name: "Enter Full Screen",
+          name: "Afficher la barre d’état",
           available: false,
         },
       ];
-      break;
     case "go":
-      content = [
+      return [
         {
-          name: "Back",
-          available: false,
+          id: "go-back",
+          name: "Retour",
+          available: fichiersActive,
+          shortcut: "⌘[",
         },
         {
-          name: "Forward",
-          available: false,
+          id: "go-forward",
+          name: "Avancer",
+          available: fichiersActive,
+          shortcut: "⌘]",
         },
-        {
-          name: "Enclosing Folder",
-          available: true,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Recents",
-          available: true,
-        },
-        {
-          name: "Documents",
-          available: true,
-        },
-        {
-          name: "Desktop",
-          available: true,
-        },
-        {
-          name: "Downloads",
-          available: true,
-        },
-        {
-          name: "Home",
-          available: true,
-        },
-        {
-          name: "Computer",
-          available: true,
-        },
-        {
-          name: "Airdrop",
-          available: true,
-        },
-        {
-          name: "Network",
-          available: true,
-        },
-        {
-          name: "iCloud Drive",
-          available: true,
-        },
-        {
-          name: "Applications",
-          available: true,
-        },
-        {
-          name: "Utilities",
-          available: true,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Go to Folder",
-          available: true,
-        },
-        {
-          name: "Connect to Server",
-          available: true,
-        },
+        d(),
+        { id: "go-recents", name: "Récents", available: true },
+        { id: "go-documents", name: "Documents", available: true },
+        { id: "go-desktop", name: "Bureau", available: true },
+        { id: "go-downloads", name: "Téléchargements", available: true },
+        { id: "go-trash", name: "Corbeille", available: true },
+        { id: "go-disk", name: "Ordinateur", available: true },
+        { id: "go-airdrop", name: "Partage NXG", available: true },
+        { id: "go-network", name: "Réseau", available: true },
+        { id: "go-drive", name: "NXG Drive", available: true },
+        { id: "go-apps", name: "Applications", available: true },
+        d(),
+        { id: "go-folder", name: "Aller au dossier…", available: true },
+        { id: "go-server", name: "Se connecter au serveur…", available: true },
       ];
-      break;
     case "windows":
-      content = [
+      return [
         {
-          name: "Minimize",
-          available: false,
+          id: "minimize",
+          name: "Réduire",
+          available: canWin,
+          shortcut: "⌘M",
         },
         {
+          id: "maximize",
           name: "Zoom",
-          available: false,
+          available: canWin,
         },
+        d(),
         {
-          name: "Move Window to Left Side of Screen",
-          available: false,
-        },
-        {
-          name: "Move Window to Right Side of Screen",
-          available: false,
-        },
-        {
-          name: "Cycle Through Windows",
+          id: "cycle-windows",
+          name: "Parcourir les fenêtres",
           available: true,
+          shortcut: "⌘`",
         },
+        d(),
         {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Show Previous Tab",
-          available: false,
-        },
-        {
-          name: "Show Next Tab",
-          available: false,
-        },
-        {
-          name: "Move Tab to New Window",
-          available: false,
-        },
-        {
-          name: "Merge all Windows",
-          available: false,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "Bring All to Front",
+          id: "bring-front",
+          name: "Tout ramener au premier plan",
           available: true,
         },
       ];
-      break;
     case "help":
-      content = [
-        {
-          name: "Send Fichiers Feedback",
-          available: true,
-        },
-        {
-          name: "divider",
-          available: false,
-        },
-        {
-          name: "macOS Help",
-          available: true,
-        },
+      return [
+        { id: "feedback", name: "Envoyer un retour Fichiers", available: true },
+        d(),
+        { id: "help-nxgos", name: "Aide NXGos", available: true },
       ];
-      break;
+    default:
+      return [];
   }
-
-  return content;
 };
 
 export default getDropdownContent;

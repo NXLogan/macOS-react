@@ -18,7 +18,7 @@ import {
   persistProfile,
   profileFromState,
 } from "./sync";
-import { onNuiEvent } from "../nui/fetchNui";
+import { isEnvBrowser, onNuiEvent } from "../nui/fetchNui";
 
 const SAVE_DEBOUNCE_MS = 450;
 
@@ -51,6 +51,8 @@ export default function MemoryBootstrap() {
   const hydrated = useRef(false);
   const saveTimer = useRef<number | null>(null);
   const skipNextSave = useRef(false);
+  const awaitingRemoteProfile = useRef(false);
+  const hydrateGen = useRef(0);
   const stateRef = useRef(state);
   stateRef.current = state;
 
@@ -61,6 +63,8 @@ export default function MemoryBootstrap() {
     profile: ComputerProfile
   ) => {
     skipNextSave.current = true;
+    awaitingRemoteProfile.current = false;
+    hydrateGen.current += 1;
     const shaped = ensureProfileShape(profile, computerId, userId, userName);
     setFsScope(computerId, userId);
     if (shaped.filesystem?.length) {
@@ -94,9 +98,19 @@ export default function MemoryBootstrap() {
   const hydrate = async (
     computerId: string,
     userId: string,
-    userName: string
+    userName: string,
+    opts?: { allowWhileAwaiting?: boolean }
   ) => {
+    const gen = ++hydrateGen.current;
     const profile = await loadProfile(computerId, userId, userName);
+    if (gen !== hydrateGen.current) return;
+    if (
+      awaitingRemoteProfile.current &&
+      !opts?.allowWhileAwaiting &&
+      !isEnvBrowser()
+    ) {
+      return;
+    }
     applyProfile(computerId, userId, userName, profile);
   };
 
@@ -132,32 +146,43 @@ export default function MemoryBootstrap() {
     const userId = params.get("user") || last?.userId || DEFAULT_USER_ID;
     const userName = params.get("name") || last?.userName || "NXG User";
 
-    void hydrate(computerId, userId, userName);
+    // Browser: hydrate local. FiveM: wait for computer:open + memory:profile.
+    if (isEnvBrowser()) {
+      void hydrate(computerId, userId, userName);
+    }
 
     const offOpen = onNuiEvent<{
       computerId?: string;
       userId?: string;
       userName?: string;
     }>("computer:open", (data) => {
+      awaitingRemoteProfile.current = !isEnvBrowser();
+      // Soft local paint while server profile is in flight
       void hydrate(
         data?.computerId || DEFAULT_COMPUTER_ID,
         data?.userId || userId || DEFAULT_USER_ID,
-        data?.userName || userName
+        data?.userName || userName,
+        { allowWhileAwaiting: true }
       );
     });
 
+    // Identity only — do NOT re-hydrate from local (would overwrite memory:profile)
     const offSession = onNuiEvent<{
       computerId: string;
       userId: string;
       userName?: string;
     }>("memory:session", (data) => {
       if (!data?.computerId || !data?.userId) return;
-      // If we only got identity (no profile yet), load local cache for that PC+user
-      void hydrate(
-        data.computerId,
-        data.userId,
-        data.userName || "NXG User"
-      );
+      awaitingRemoteProfile.current = true;
+      dispatch({
+        type: "memory/SESSION",
+        payload: {
+          computerId: data.computerId,
+          userId: data.userId,
+          userName: data.userName || "NXG User",
+        },
+      });
+      setFsScope(data.computerId, data.userId);
     });
 
     const offProfile = onNuiEvent<{

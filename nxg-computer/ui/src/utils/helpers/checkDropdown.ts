@@ -1,13 +1,13 @@
-const checkDropdown = (e: React.MouseEvent) => {
+const checkDropdown = (e: { target: EventTarget | null }) => {
   const target = e.target as HTMLElement;
 
-  if (target.classList.contains("dd")) {
+  if (target.closest?.(".dd") || target.closest?.(".dropdown-menu")) {
     return true;
-  } else if (target.classList.contains("section")) {
-    return true;
-  } else {
-    return false;
   }
+  if (target.closest?.(".section") || target.classList?.contains("section")) {
+    return true;
+  }
+  return false;
 };
 
 export default checkDropdown;

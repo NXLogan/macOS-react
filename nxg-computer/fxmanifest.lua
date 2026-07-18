@@ -4,7 +4,7 @@ lua54 'yes'
 
 name 'nxg-computer'
 author 'NXG'
-description 'NXG Computer — immersive in-game PC system for FiveM'
+description 'NXGos — immersive in-game PC system for FiveM'
 version '0.1.0'
 
 shared_scripts {

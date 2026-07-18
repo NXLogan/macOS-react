@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useRef, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { store } from "../../App";
 import TrafficLights from "../../desktop/WindowChrome/TrafficLights";
 import AppWindowShell from "../../desktop/WindowChrome/AppWindowShell";
@@ -12,6 +12,12 @@ import {
 } from "../../utils/helpers/applyWallpaper";
 import updateSysColor from "../../utils/helpers/updateSysColor";
 import { APP_CATALOG, DockApp } from "../../desktop/Dock/dockApps";
+import { pinAppToDock, unpinAppFromDock } from "../../desktop/Dock/dockPin";
+import clearStorage from "../../utils/helpers/clearStorage";
+import {
+  computeStorageBreakdown,
+  totalStorageBytes,
+} from "../fichiers/fsApi";
 import {
   ACCENT_COLORS,
   AccentId,
@@ -20,7 +26,6 @@ import {
   NotificationAppId,
   PermissionId,
   SettingsSectionId,
-  STORAGE_USAGE,
   ThemeMode,
   TOTAL_STORAGE_GB,
 } from "./settingsMeta";
@@ -36,7 +41,7 @@ const SECTIONS: {
   { id: "compte", label: "Compte", icon: "👤", color: "#64d2ff" },
   { id: "reseau", label: "Réseau", icon: "📡", color: "#0a84ff" },
   { id: "notifications", label: "Notifications", icon: "🔔", color: "#ff453a" },
-  { id: "dock", label: "Dock & Bureau", icon: "⬜", color: "#8e8e93" },
+  { id: "dock", label: "Barre & Bureau", icon: "⬜", color: "#8e8e93" },
   { id: "stockage", label: "Stockage", icon: "💾", color: "#30d158" },
   {
     id: "confidentialite",
@@ -143,6 +148,15 @@ export default function ParametresApp() {
 
   const open = Boolean(state.openApps?.parametres);
 
+  useEffect(() => {
+    const onSec = (e: Event) => {
+      const id = (e as CustomEvent).detail;
+      if (typeof id === "string") setSection(id as SettingsSectionId);
+    };
+    window.addEventListener("nxg-parametres-section", onSec);
+    return () => window.removeEventListener("nxg-parametres-section", onSec);
+  }, []);
+
   const showToast = (msg: string) => {
     setToast(msg);
     window.setTimeout(() => setToast(null), 2200);
@@ -218,20 +232,28 @@ export default function ParametresApp() {
   };
 
   const pinApp = (app: DockApp) => {
-    dispatch({ type: "dock/ADD", payload: app });
+    pinAppToDock(dispatch, state, app);
+    showToast(`${app.name} dans la barre`);
   };
 
   const unpinApp = (id: string) => {
-    if (state.dockApps.length <= 1) {
-      showToast("Garde au moins une app dans le Dock");
+    const result = unpinAppFromDock(dispatch, state, id);
+    if (!result.ok) {
+      showToast(result.reason || "Impossible");
       return;
     }
-    dispatch({ type: "dock/REMOVE", payload: id });
+    showToast("Retiré de la barre — placé sur le Bureau");
   };
 
   const clearCache = () => {
-    patchPrefs({ cacheClearedAt: Date.now() });
-    showToast("Cache vidé");
+    if (
+      !window.confirm(
+        "Vider le cache local ?\n\nLes données de ce PC seront réinitialisées après rechargement."
+      )
+    ) {
+      return;
+    }
+    clearStorage();
   };
 
   const filteredSections = useMemo(() => {
@@ -240,12 +262,32 @@ export default function ParametresApp() {
     return SECTIONS.filter((s) => s.label.toLowerCase().includes(q));
   }, [search]);
 
-  const usedMb = STORAGE_USAGE.reduce((a, b) => a + b.mb, 0);
+  const [storageTick, setStorageTick] = useState(0);
+  useEffect(() => {
+    const bump = () => setStorageTick((n) => n + 1);
+    window.addEventListener("nxg-fs-changed", bump);
+    window.addEventListener("nxg-memory-hydrated", bump);
+    return () => {
+      window.removeEventListener("nxg-fs-changed", bump);
+      window.removeEventListener("nxg-memory-hydrated", bump);
+    };
+  }, []);
+
+  const storageBuckets = useMemo(() => {
+    void storageTick;
+    return computeStorageBreakdown();
+  }, [storageTick]);
+
+  const usedBytes = useMemo(
+    () => totalStorageBytes(storageBuckets),
+    [storageBuckets]
+  );
+  const usedMb = usedBytes / (1024 * 1024);
   const usedPct = Math.min(100, (usedMb / (TOTAL_STORAGE_GB * 1024)) * 100);
 
   const wallPreview = state.settings.wallpaper.custom
     ? state.settings.wallpaper.src
-    : state.settings.wallpaper.name === "Catalina"
+    : state.settings.wallpaper.surname === "catalina"
     ? require("../../assets/images/catalina_day.jpg")
     : resolveBundledWallpaper(state.settings.wallpaper.surname);
 
@@ -259,6 +301,12 @@ export default function ParametresApp() {
       windowClassName="parametres-window"
       windowId="parametres-window"
     >
+        <div
+          className="parametres-window-hit"
+          onMouseDown={() =>
+            dispatch({ type: "onTop/SET", payload: "parametres" })
+          }
+        >
         <header className="parametres-titlebar">
           <TrafficLights appId="parametres" />
           <div className="parametres-title">Paramètres</div>
@@ -294,7 +342,7 @@ export default function ParametresApp() {
                 <div className="parametres-user-name">
                   {state.user.name || "Utilisateur"}
                 </div>
-                <div className="parametres-user-sub">Compte NXG</div>
+                <div className="parametres-user-sub">Compte NXGos</div>
               </div>
             </button>
 
@@ -379,7 +427,7 @@ export default function ParametresApp() {
                   </Row>
                 </section>
 
-                <h2>Dock</h2>
+                <h2>Barre d’apps</h2>
                 <section className="ps-card">
                   <Row label="Taille des icônes">
                     <Segmented<DockIconSize>
@@ -497,14 +545,14 @@ export default function ParametresApp() {
                   </Row>
                   <Row
                     label="Méthode"
-                    hint="Touch ID est une simulation visuelle"
+                    hint="NXG ID est une simulation visuelle"
                   >
                     <Segmented<"password" | "touchid">
                       value={prefs.lockMethod}
                       onChange={(lockMethod) => patchPrefs({ lockMethod })}
                       options={[
                         { id: "password", label: "Code" },
-                        { id: "touchid", label: "Touch ID" },
+                        { id: "touchid", label: "NXG ID" },
                       ]}
                     />
                   </Row>
@@ -614,12 +662,12 @@ export default function ParametresApp() {
 
             {section === "dock" && (
               <div className="ps-pane">
-                <PaneHead sectionId="dock" title="Dock & Bureau" />
+                <PaneHead sectionId="dock" title="Barre & Bureau" />
                 <h2>Apps épinglées</h2>
                 <section className="ps-card ps-card-pad">
                   <p className="ps-hint">
-                    Réorganise aussi par glisser-déposer directement dans le
-                    Dock.
+                    Réorganise aussi par glisser-déposer directement dans la
+                    barre d’apps.
                   </p>
                   <div className="ps-app-list">
                     {APP_CATALOG.map((app) => {
@@ -675,16 +723,21 @@ export default function ParametresApp() {
                     <div style={{ width: `${usedPct}%` }} />
                   </div>
                   <div className="ps-storage-list">
-                    {STORAGE_USAGE.map((item) => (
-                      <div key={item.id} className="ps-storage-row">
-                        <span>{item.label}</span>
-                        <span>
-                          {item.mb >= 1024
-                            ? `${(item.mb / 1024).toFixed(1)} Go`
-                            : `${item.mb} Mo`}
-                        </span>
-                      </div>
-                    ))}
+                    {storageBuckets.map((item) => {
+                      const mb = item.bytes / (1024 * 1024);
+                      return (
+                        <div key={item.id} className="ps-storage-row">
+                          <span>{item.label}</span>
+                          <span>
+                            {mb >= 1024
+                              ? `${(mb / 1024).toFixed(1)} Go`
+                              : mb >= 1
+                              ? `${mb.toFixed(0)} Mo`
+                              : `${Math.max(1, Math.round(item.bytes / 1024))} Ko`}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                   <button type="button" className="ps-btn" onClick={clearCache}>
                     Vider le cache
@@ -759,7 +812,7 @@ export default function ParametresApp() {
                 <PaneHead sectionId="apropos" title="À propos" />
                 <section className="ps-card ps-about">
                   <div className="ps-about-logo">NXG</div>
-                  <h2>NXG Computer</h2>
+                  <h2>NXGos</h2>
                   <p className="ps-mono">Version 1.0.0</p>
                   <div className="ps-about-locked">
                     <div className="ps-about-row">
@@ -787,6 +840,7 @@ export default function ParametresApp() {
         </div>
 
         {toast ? <div className="parametres-toast">{toast}</div> : null}
+        </div>
     </AppWindowShell>
   );
 }

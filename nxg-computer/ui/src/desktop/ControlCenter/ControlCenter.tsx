@@ -7,48 +7,72 @@ import { ReactComponent as Tick } from "../../assets/images/svg/tick.svg";
 import { ReactComponent as Notch } from "../../assets/images/svg/notch.svg";
 import toggleWallpaperVis from "../../utils/helpers/toggleWallpaperVis";
 import { resolveBundledPreview } from "../../utils/helpers/applyWallpaper";
-import returnColor from "../../utils/helpers/returnColor";
+import returnColor, {
+  normalizeAccentId,
+} from "../../utils/helpers/returnColor";
 import updateSysColor from "../../utils/helpers/updateSysColor";
+import { ACCENT_COLORS, AccentId } from "../../apps/parametres/settingsMeta";
+
+const CC_ACCENTS: AccentId[] = [
+  "orange",
+  "green",
+  "blue",
+  "purple",
+  "pink",
+  "red",
+  "yellow",
+  "graphite",
+];
 
 export default function ControlCenter() {
   const [state, dispatch] = useContext(store);
+  const accent = normalizeAccentId(
+    state.settings.prefs?.accent || state.settings.color || "blue"
+  );
 
-  const setSystemColor = (e: React.MouseEvent) => {
-    const target = e.target as HTMLDivElement;
-    dispatch({
-      type: "settings/SETCOLOR",
-      payload: target.id,
-    });
-
-    updateSysColor(target.id);
+  const setSystemColor = (id: AccentId) => {
+    dispatch({ type: "prefs/PATCH", payload: { accent: id } });
+    dispatch({ type: "settings/SETCOLOR", payload: id });
+    updateSysColor(id);
+    document.documentElement.style.setProperty(
+      "--nxg-accent",
+      ACCENT_COLORS[id]
+    );
+    document.documentElement.style.setProperty(
+      "--user-color",
+      ACCENT_COLORS[id]
+    );
   };
 
   const toggleAnimations = () => {
-    dispatch({
-      type: "settings/ANIMATIONS",
-    });
+    dispatch({ type: "settings/ANIMATIONS" });
   };
 
   const toggleAirdrop = () => {
-    dispatch({
-      type: "settings/AIRDROP",
-    });
+    dispatch({ type: "settings/AIRDROP" });
   };
 
   const toggleNotch = () => {
-    dispatch({
-      type: "settings/NOTCH",
-    });
+    dispatch({ type: "settings/NOTCH" });
   };
 
   const openWallpaperWindow = (e: React.MouseEvent) => {
     if (state.settings.wallpaper.open) {
       toggleWallpaperVis(e);
     }
+    dispatch({ type: "wallpaper/TOGGLE" });
+  };
 
-    dispatch({
-      type: "wallpaper/TOGGLE",
-    });
+  const openParametres = (section?: string) => {
+    dispatch({ type: "apps/OPEN", payload: "parametres" });
+    dispatch({ type: "settings/CLOSE" });
+    if (section) {
+      window.setTimeout(() => {
+        window.dispatchEvent(
+          new CustomEvent("nxg-parametres-section", { detail: section })
+        );
+      }, 40);
+    }
   };
 
   return (
@@ -65,7 +89,7 @@ export default function ControlCenter() {
             style={{
               backgroundColor: !state.settings.airdrop
                 ? "#2f3541"
-                : returnColor(state.settings.color),
+                : returnColor(accent),
             }}
           >
             <Airdrop
@@ -73,7 +97,7 @@ export default function ControlCenter() {
               style={{ transition: "0.25s all" }}
             />
           </button>
-          Airdrop
+          Partage NXG
         </div>
 
         <div className="func set" onClick={toggleAnimations}>
@@ -83,7 +107,7 @@ export default function ControlCenter() {
             style={{
               backgroundColor: !state.settings.animations
                 ? "#2f3541"
-                : returnColor(state.settings.color),
+                : returnColor(accent),
             }}
           >
             <Animations
@@ -96,45 +120,23 @@ export default function ControlCenter() {
       </section>
 
       <section className="sys-colors set">
-        System Color
+        Couleur système
         <div className="colors set">
-          <div
-            className="color orangey set"
-            id="orange"
-            onClick={setSystemColor}
-          >
-            {state.settings.color === "orange" ? <Tick /> : null}
-          </div>
-          <div className="color greeny set" id="green" onClick={setSystemColor}>
-            {state.settings.color === "green" ? <Tick /> : null}
-          </div>
-          <div
-            className="color babybluey set"
-            id="babyblue"
-            onClick={setSystemColor}
-          >
-            {state.settings.color === "babyblue" ? <Tick /> : null}
-          </div>
-          <div className="color bluey set" id="blue" onClick={setSystemColor}>
-            {state.settings.color === "blue" ? <Tick /> : null}
-          </div>
-          <div
-            className="color purpley set"
-            id="purple"
-            onClick={setSystemColor}
-          >
-            {state.settings.color === "purple" ? <Tick /> : null}
-          </div>
-          <div
-            className="color violety set"
-            id="violet"
-            onClick={setSystemColor}
-          >
-            {state.settings.color === "violet" ? <Tick /> : null}
-          </div>
-          <div className="color redy set" id="red" onClick={setSystemColor}>
-            {state.settings.color === "red" ? <Tick /> : null}
-          </div>
+          {CC_ACCENTS.map((id) => (
+            <div
+              key={id}
+              className={`color set accent-${id}`}
+              style={{ backgroundColor: ACCENT_COLORS[id] }}
+              onClick={() => setSystemColor(id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") setSystemColor(id);
+              }}
+            >
+              {accent === id ? <Tick /> : null}
+            </div>
+          ))}
         </div>
       </section>
 
@@ -144,7 +146,7 @@ export default function ControlCenter() {
         onClick={openWallpaperWindow}
       >
         <img
-          alt="Wallpaper Preview"
+          alt="Aperçu fond d’écran"
           className="preview"
           src={
             state.settings.wallpaper.custom
@@ -162,25 +164,21 @@ export default function ControlCenter() {
         </div>
       </section>
 
-      <section className="notch-container set" onClick={toggleNotch}>
+      <section
+        className="notch-container set"
+        onClick={toggleNotch}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          openParametres("apparence");
+        }}
+      >
         <button
           className="notch-btn set"
+          type="button"
           style={{
             backgroundColor: !state.settings.notch
               ? "#2f3541"
-              : state.settings.color === "blue"
-              ? "#0a85ff"
-              : state.settings.color === "orange"
-              ? "#ff9d0a"
-              : state.settings.color === "green"
-              ? "#2ed157"
-              : state.settings.color === "babyblue"
-              ? "#66d4ff"
-              : state.settings.color === "purple"
-              ? "#5e5ce6"
-              : state.settings.color === "violet"
-              ? "#bf5af2"
-              : "#ff3860",
+              : returnColor(accent),
           }}
         >
           <Notch
@@ -188,8 +186,16 @@ export default function ControlCenter() {
             style={{ transition: "0.25s all" }}
           />
         </button>
-        Notch
+        Encoche
       </section>
+
+      <button
+        type="button"
+        className="cc-open-settings"
+        onClick={() => openParametres()}
+      >
+        Ouvrir Paramètres…
+      </button>
     </div>
   );
 }

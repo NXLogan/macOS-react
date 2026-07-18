@@ -1,21 +1,11 @@
-const updateSysColor = (color: string) => {
-  const map: Record<string, string> = {
-    orange: "#ff9f0a",
-    green: "#30d158",
-    babyblue: "#64d2ff",
-    blue: "#0a84ff",
-    purple: "#bf5af2",
-    violet: "#bf5af2",
-    pink: "#ff375f",
-    yellow: "#ffd60a",
-    graphite: "#8e8e93",
-    red: "#ff453a",
-  };
+import { ACCENT_COLORS, AccentId } from "../../apps/parametres/settingsMeta";
+import { normalizeAccentId } from "./returnColor";
 
-  document.documentElement.style.setProperty(
-    "--user-color",
-    map[color] ?? "#0a84ff"
-  );
+const updateSysColor = (color: string) => {
+  const id = normalizeAccentId(color);
+  const hex = ACCENT_COLORS[id as AccentId] ?? ACCENT_COLORS.blue;
+  document.documentElement.style.setProperty("--user-color", hex);
+  document.documentElement.style.setProperty("--nxg-accent", hex);
 };
 
 export default updateSysColor;

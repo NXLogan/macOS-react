@@ -1,7 +1,7 @@
 .desktop-icons-layer {
   position: absolute;
   inset: 0;
-  z-index: 3;
+  z-index: 16;
   pointer-events: none;
 
   &.is-dragging {
@@ -38,6 +38,13 @@
   &.will-dock {
     img {
       transform: scale(0.92);
+    }
+  }
+
+  &.cant-dock {
+    img {
+      transform: scale(0.96);
+      filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35)) grayscale(0.35);
     }
   }
 

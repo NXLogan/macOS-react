@@ -8,18 +8,25 @@ export default function BootScreen() {
   const [state, dispatch] = useContext(store);
 
   useEffect(() => {
-    setTimeout(() => {
+    const t1 = window.setTimeout(() => {
       const bootUpWindow = document.getElementById("boot");
-      bootUpWindow!.classList.remove("bootup-window");
-      bootUpWindow!.classList.add("vanished");
+      bootUpWindow?.classList.remove("bootup-window");
+      bootUpWindow?.classList.add("vanished");
       playSound();
     }, 3350);
 
-    setTimeout(() => {
+    const t2 = window.setTimeout(() => {
       dispatch({
         type: "booting/FINISH",
       });
     }, 4350);
+
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+    // Boot sequence runs once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animations = {
@@ -53,7 +60,7 @@ export default function BootScreen() {
         className="logo"
         src={require("../../assets/images/nxg-boot.png")}
       />
-      <div className="boot-brand">NXG Computer</div>
+      <div className="boot-brand">NXGos</div>
       <div className="bar-container">
         <div className="bar-background" />
         <motion.div
