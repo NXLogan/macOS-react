@@ -1,0 +1,148 @@
+.photos-window {
+  width: 100%;
+  height: 100%;
+  background: #1c1c1e;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  color: #f5f5f7;
+  font-family: var(--nxg-font), "Segoe UI", system-ui, sans-serif;
+}
+
+.nxg-drag-root:has(> .photos-window) {
+  width: min(900px, 86vw);
+  height: min(580px, 74vh);
+  z-index: 28;
+}
+
+.photos-hit {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  position: relative;
+}
+
+.photos-titlebar {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.photos-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.photos-import {
+  margin-left: auto;
+  font-size: 12px;
+  color: #0a84ff;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.photos-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 180px 1fr;
+}
+
+.photos-side {
+  border-right: 0.5px solid rgba(255, 255, 255, 0.08);
+  padding: 10px;
+  overflow: auto;
+  background: rgba(255, 255, 255, 0.02);
+
+  button {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 13px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 2px;
+
+    &.active {
+      background: rgba(10, 132, 255, 0.28);
+    }
+
+    span {
+      opacity: 0.5;
+      font-size: 12px;
+    }
+  }
+}
+
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 4px;
+  padding: 8px;
+  overflow: auto;
+  align-content: start;
+}
+
+.photos-tile {
+  border: none;
+  padding: 0;
+  background: #111;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.photos-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  opacity: 0.45;
+  padding: 40px;
+}
+
+.photos-lightbox {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  cursor: zoom-out;
+
+  img {
+    max-width: 92%;
+    max-height: 82%;
+    object-fit: contain;
+    border-radius: 6px;
+  }
+}
+
+.photos-lightbox-caption {
+  margin-top: 12px;
+  font-size: 13px;
+  opacity: 0.8;
+}

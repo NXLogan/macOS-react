@@ -1,8 +1,11 @@
-export type DockApp = {
-  id: string;
-  name: string;
-  icon: string;
-};
+import {
+  catalogAsDockApps,
+  isAppInstalled,
+  loadInstalledIds,
+} from "../../apps/registry";
+import type { DockApp } from "../../apps/registry";
+
+export type { DockApp };
 
 export type DesktopIcon = {
   id: string;
@@ -22,12 +25,8 @@ export type ContextMenuState = {
   targetId?: string;
 };
 
-export const APP_CATALOG: DockApp[] = [
-  { id: "fichiers", name: "Fichiers", icon: "fichiers.png" },
-  { id: "parametres", name: "Paramètres", icon: "parametres.png" },
-  { id: "calculator", name: "Calculatrice", icon: "calculator.png" },
-  { id: "corbeille", name: "Corbeille", icon: "corbeille.png" },
-];
+/** All known apps (even uninstalled). Source: apps/registry. */
+export const APP_CATALOG: DockApp[] = catalogAsDockApps();
 
 /** Apps that can open a window today. */
 export const OPENABLE_APP_IDS = [
@@ -35,6 +34,15 @@ export const OPENABLE_APP_IDS = [
   "parametres",
   "calculator",
   "corbeille",
+  "appstore",
+  "notes",
+  "photos",
+  "web",
+  "musique",
+  "terminal",
+  "plans",
+  "calendrier",
+  "mail",
 ] as const;
 
 export type OpenableAppId = (typeof OPENABLE_APP_IDS)[number];
@@ -44,17 +52,23 @@ export function isOpenableAppId(id: string): id is OpenableAppId {
 }
 
 /** Apps that must stay available in the dock unless explicitly on the desktop. */
-export const PINNED_CORE_APPS = ["fichiers", "parametres", "corbeille"] as const;
+export const PINNED_CORE_APPS = [
+  "fichiers",
+  "parametres",
+  "corbeille",
+  "appstore",
+] as const;
 
-/** Drop unknown / stub app ids left over from older catalogs. */
+/** Drop unknown / stub / uninstalled app ids. */
 export function sanitizeDockApps(dockApps: DockApp[]): DockApp[] {
   const map = catalogMap();
+  const installed = new Set(loadInstalledIds());
   return dockApps
     .map((app) => {
       const id = app.id === "finder" ? "fichiers" : app.id;
       return map.get(id) || null;
     })
-    .filter((a): a is DockApp => Boolean(a));
+    .filter((a): a is DockApp => Boolean(a) && installed.has(a!.id));
 }
 
 export function ensureCoreDockApps(
@@ -69,14 +83,14 @@ export function ensureCoreDockApps(
   const present = new Set(next.map((a) => a.id));
 
   for (const id of PINNED_CORE_APPS) {
+    if (!isAppInstalled(id)) continue;
     if (present.has(id) || onDesktop.has(id)) continue;
     const app = map.get(id);
     if (!app) continue;
-    // Insert Paramètres right after Fichiers when possible
     if (id === "parametres") {
       const fi = next.findIndex((a) => a.id === "fichiers");
       next.splice(fi >= 0 ? fi + 1 : 0, 0, app);
-    } else if (id === "corbeille") {
+    } else if (id === "corbeille" || id === "appstore") {
       next.push(app);
     } else {
       next.unshift(app);

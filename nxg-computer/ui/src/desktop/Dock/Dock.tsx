@@ -5,11 +5,13 @@ import { store } from "../../App";
 import {
   DesktopIcon,
   DockApp,
+  APP_CATALOG,
   ensureCoreDockApps,
   isOpenableAppId,
   isOverDock,
   snapDesktopPosition,
 } from "./dockApps";
+import { isAppInstalled } from "../../apps/registry";
 import "./Dock.scss";
 
 function dockSizeClass(count: number) {
@@ -43,15 +45,44 @@ export default function Dock() {
   useEffect(() => {
     if (!state.session?.ready) return;
     const next = ensureCoreDockApps(state.dockApps, state.desktopIcons);
-    if (next.length !== state.dockApps.length) {
-      dispatch({ type: "dock/REORDER", payload: next });
-    } else {
-      const ids = new Set(state.dockApps.map((a: DockApp) => a.id));
-      if (!ids.has("parametres") || !ids.has("fichiers") || !ids.has("corbeille")) {
-        dispatch({ type: "dock/REORDER", payload: next });
+    let payload = next;
+
+    // One-shot: seed newly catalogued apps into the Dock for existing profiles
+    const MIGRATE_KEY = "nxg-dock-catalog-v2";
+    if (!localStorage.getItem(MIGRATE_KEY)) {
+      const onDesktop = new Set(
+        state.desktopIcons
+          .filter((i: { kind?: string }) => i.kind !== "folder")
+          .map((i: { id: string }) => i.id)
+      );
+      const present = new Set(payload.map((a: DockApp) => a.id));
+      const seeded = [...payload];
+      for (const app of APP_CATALOG) {
+        if (present.has(app.id) || onDesktop.has(app.id)) continue;
+        if (!isOpenableAppId(app.id) || !isAppInstalled(app.id)) continue;
+        seeded.push(app);
+        present.add(app.id);
       }
+      payload = seeded;
+      localStorage.setItem(MIGRATE_KEY, "1");
+    }
+
+    if (
+      payload.length !== state.dockApps.length ||
+      payload.some((a, i) => a.id !== state.dockApps[i]?.id)
+    ) {
+      dispatch({ type: "dock/REORDER", payload });
     }
   }, [state.session?.ready]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const syncInstalled = () => {
+      const next = ensureCoreDockApps(state.dockApps, state.desktopIcons);
+      dispatch({ type: "dock/REORDER", payload: next });
+    };
+    window.addEventListener("nxg-apps-installed", syncInstalled);
+    return () => window.removeEventListener("nxg-apps-installed", syncInstalled);
+  }, [state.dockApps, state.desktopIcons, dispatch]);
 
   useEffect(() => {
     const onMove = (e: PointerEvent) => {

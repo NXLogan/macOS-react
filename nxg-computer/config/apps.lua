@@ -17,17 +17,71 @@ Config.Apps = {
         default = true,
         removable = false,
     },
+    corbeille = {
+        name = 'Corbeille',
+        icon = 'corbeille',
+        default = true,
+        removable = false,
+    },
+    appstore = {
+        name = 'App Store',
+        icon = 'appstore',
+        default = true,
+        removable = false,
+    },
     calculator = {
         name = 'Calculatrice',
         icon = 'calculator',
         default = true,
         removable = true,
     },
-    corbeille = {
-        name = 'Corbeille',
-        icon = 'corbeille',
+    notes = {
+        name = 'Notes',
+        icon = 'notes',
         default = true,
-        removable = false,
+        removable = true,
+    },
+    photos = {
+        name = 'Photos',
+        icon = 'photos',
+        default = true,
+        removable = true,
+    },
+    web = {
+        name = 'Web',
+        icon = 'web',
+        default = true,
+        removable = true,
+    },
+    musique = {
+        name = 'Musique',
+        icon = 'musique',
+        default = true,
+        removable = true,
+    },
+    terminal = {
+        name = 'Terminal',
+        icon = 'terminal',
+        default = true,
+        removable = true,
+    },
+    plans = {
+        name = 'Plans',
+        icon = 'plans',
+        default = true,
+        removable = true,
+    },
+    calendrier = {
+        name = 'Calendrier',
+        icon = 'calendar',
+        default = true,
+        removable = true,
+    },
+    mail = {
+        name = 'Mail',
+        icon = 'mail',
+        default = true,
+        removable = true,
     },
 }
 

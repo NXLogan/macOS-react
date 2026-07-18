@@ -7,6 +7,7 @@ import DropdownMenu from "../DropdownMenu/DropdownMenu";
 import ControlCenter from "../ControlCenter/ControlCenter";
 import { frontAppId } from "./menuActions";
 import getDate from "../../utils/helpers/getDate";
+import { FULL_APP_CATALOG } from "../../apps/registry";
 
 const MENU_ITEMS: { id: string; label: string; bold?: boolean }[] = [
   { id: "fichiers", label: "Fichiers", bold: true },
@@ -26,13 +27,7 @@ export default function MenuBar() {
   const wifiOn = state.settings.prefs?.wifi !== false;
 
   const appLabel =
-    front === "parametres"
-      ? "Paramètres"
-      : front === "calculator"
-      ? "Calculatrice"
-      : front === "corbeille"
-      ? "Corbeille"
-      : "Fichiers";
+    FULL_APP_CATALOG.find((a) => a.id === front)?.name || "NXGos";
 
   useEffect(() => {
     const id = window.setInterval(() => setClock(getDate()), 30000);
@@ -75,6 +70,11 @@ export default function MenuBar() {
     }, 40);
   };
 
+  const menus = [
+    { id: "fichiers", label: appLabel, bold: true },
+    ...MENU_ITEMS.slice(1),
+  ];
+
   return (
     <>
       <div className="filter" />
@@ -94,7 +94,7 @@ export default function MenuBar() {
           {state.section === "logo" ? <DropdownMenu /> : null}
         </div>
 
-        {MENU_ITEMS.map((item) => (
+        {menus.map((item) => (
           <div
             key={item.id}
             className={`section ${item.bold ? "fichiers-menu app-menu" : ""} ${

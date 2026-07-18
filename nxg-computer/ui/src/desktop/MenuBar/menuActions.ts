@@ -1,3 +1,5 @@
+import { OPENABLE_APP_IDS } from "../Dock/dockApps";
+
 export type MenuActionId =
   | "about-nxgos"
   | "open-settings"
@@ -91,16 +93,14 @@ export function frontAppId(state: {
 }): string | null {
   const top = state.onTop;
   if (
-    top === "fichiers" ||
-    top === "parametres" ||
-    top === "calculator" ||
-    top === "corbeille"
+    top &&
+    (OPENABLE_APP_IDS as readonly string[]).includes(top) &&
+    state.openApps?.[top]
   ) {
-    if (state.openApps?.[top]) return top;
+    return top;
   }
-  if (state.openApps?.fichiers) return "fichiers";
-  if (state.openApps?.parametres) return "parametres";
-  if (state.openApps?.calculator) return "calculator";
-  if (state.openApps?.corbeille) return "corbeille";
+  for (const id of OPENABLE_APP_IDS) {
+    if (state.openApps?.[id]) return id;
+  }
   return null;
 }

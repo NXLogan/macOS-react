@@ -25,6 +25,15 @@ const FichiersApp = lazy(() => import("./apps/fichiers/FichiersApp"));
 const ParametresApp = lazy(() => import("./apps/parametres/ParametresApp"));
 const CalculatorApp = lazy(() => import("./apps/calculator/CalculatorApp"));
 const CorbeilleApp = lazy(() => import("./apps/corbeille/CorbeilleApp"));
+const AppStoreApp = lazy(() => import("./apps/appstore/AppStoreApp"));
+const NotesApp = lazy(() => import("./apps/notes/NotesApp"));
+const PhotosApp = lazy(() => import("./apps/photos/PhotosApp"));
+const WebApp = lazy(() => import("./apps/web/WebApp"));
+const MusiqueApp = lazy(() => import("./apps/musique/MusiqueApp"));
+const TerminalApp = lazy(() => import("./apps/terminal/TerminalApp"));
+const PlansApp = lazy(() => import("./apps/plans/PlansApp"));
+const CalendrierApp = lazy(() => import("./apps/calendrier/CalendrierApp"));
+const MailApp = lazy(() => import("./apps/mail/MailApp"));
 const WallpaperWindow = lazy(
   () => import("./desktop/WallpaperWindow/WallpaperWindow")
 );
@@ -51,6 +60,33 @@ function App() {
           </OpenAppsGate>
           <OpenAppsGate appId="corbeille">
             <CorbeilleApp />
+          </OpenAppsGate>
+          <OpenAppsGate appId="appstore">
+            <AppStoreApp />
+          </OpenAppsGate>
+          <OpenAppsGate appId="notes">
+            <NotesApp />
+          </OpenAppsGate>
+          <OpenAppsGate appId="photos">
+            <PhotosApp />
+          </OpenAppsGate>
+          <OpenAppsGate appId="web">
+            <WebApp />
+          </OpenAppsGate>
+          <OpenAppsGate appId="musique">
+            <MusiqueApp />
+          </OpenAppsGate>
+          <OpenAppsGate appId="terminal">
+            <TerminalApp />
+          </OpenAppsGate>
+          <OpenAppsGate appId="plans">
+            <PlansApp />
+          </OpenAppsGate>
+          <OpenAppsGate appId="calendrier">
+            <CalendrierApp />
+          </OpenAppsGate>
+          <OpenAppsGate appId="mail">
+            <MailApp />
           </OpenAppsGate>
           <WallpaperWindow />
         </Suspense>

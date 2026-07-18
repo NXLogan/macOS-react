@@ -76,7 +76,21 @@ export async function runMenuAction(
 ) {
   const front = frontAppId(state);
   const fichiersOpen = Boolean(state.openApps?.fichiers);
-  const APP_IDS = ["fichiers", "parametres", "calculator", "corbeille"] as const;
+  const APP_IDS = [
+    "fichiers",
+    "parametres",
+    "calculator",
+    "corbeille",
+    "appstore",
+    "notes",
+    "photos",
+    "web",
+    "musique",
+    "terminal",
+    "plans",
+    "calendrier",
+    "mail",
+  ] as const;
 
   switch (id) {
     case "about-nxgos":
@@ -89,7 +103,8 @@ export async function runMenuAction(
       openParametres(dispatch, "apropos");
       break;
     case "store":
-      toast("Boutique NXG — bientôt disponible");
+      dispatch({ type: "apps/OPEN", payload: "appstore" });
+      dispatch({ type: "onTop/SET", payload: "appstore" });
       break;
     case "recent-items":
       ensureFichiersThen(dispatch, state, () =>
@@ -103,6 +118,15 @@ export async function runMenuAction(
           parametres: "Paramètres",
           calculator: "Calculatrice",
           corbeille: "Corbeille",
+          appstore: "App Store",
+          notes: "Notes",
+          photos: "Photos",
+          web: "Web",
+          musique: "Musique",
+          terminal: "Terminal",
+          plans: "Plans",
+          calendrier: "Calendrier",
+          mail: "Mail",
         };
         dispatch({ type: "apps/CLOSE", payload: front });
         toast(`${labels[front] || front} fermé`);

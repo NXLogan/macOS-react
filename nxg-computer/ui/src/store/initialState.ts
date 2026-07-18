@@ -1,5 +1,5 @@
 import storeType from "./types/store";
-import { APP_CATALOG } from "../desktop/Dock/dockApps";
+import { installedDockApps } from "../apps/registry";
 
 export const defaultPrefs: storeType["settings"]["prefs"] = {
   theme: "dark",
@@ -35,7 +35,7 @@ const initialState: storeType = {
   loading: false,
   section: "none",
   dockItem: undefined,
-  dockApps: APP_CATALOG,
+  dockApps: installedDockApps(),
   desktopIcons: [],
   contextMenu: {
     open: false,

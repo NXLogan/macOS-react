@@ -6,6 +6,7 @@ import {
   MemorySession,
 } from "./types";
 import { APP_CATALOG } from "../../desktop/Dock/dockApps";
+import { installedDockApps } from "../../apps/registry";
 import { buildDefaultFs } from "../../apps/fichiers/fs";
 
 const PROFILE_PREFIX = "nxg-memory:profile:";
@@ -64,7 +65,7 @@ export function createDefaultProfile(
       avatar: undefined,
       phone: "",
     },
-    dockApps: [...APP_CATALOG],
+    dockApps: installedDockApps(),
     desktopIcons: [],
     settings: {
       animations: true,

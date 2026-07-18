@@ -27,12 +27,21 @@ nxg-computer/
 
 ## Apps disponibles
 
-| Id | Nom |
-|----|-----|
-| `fichiers` | Fichiers |
-| `parametres` | Paramètres |
-| `calculator` | Calculatrice |
-| `corbeille` | Corbeille |
+| Id | Nom | Notes |
+|----|-----|-------|
+| `fichiers` | Fichiers | Système |
+| `parametres` | Paramètres | Système |
+| `corbeille` | Corbeille | Système |
+| `appstore` | App Store | Installer / retirer des apps |
+| `calculator` | Calculatrice | |
+| `notes` | Notes | Style 3 colonnes |
+| `photos` | Photos | Galerie + import |
+| `web` | Web | Navigateur / recherche |
+| `musique` | Musique | URL mp3 / YouTube |
+| `terminal` | Terminal | Shell RP hacker |
+| `plans` | Plans | Carte San Andreas |
+| `calendrier` | Calendrier | Événements |
+| `mail` | Mail | Boîte de réception |
 
 ## Dev UI (localhost)
 

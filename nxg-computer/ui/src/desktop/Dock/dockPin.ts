@@ -36,7 +36,7 @@ export function unpinAppFromDock(
   id: string
 ): { ok: boolean; reason?: string } {
   if ((PINNED_CORE_APPS as readonly string[]).includes(id)) {
-    return { ok: false, reason: "Fichiers et Paramètres restent dans la barre" };
+    return { ok: false, reason: "Cette app système reste dans la barre" };
   }
 
   const app =

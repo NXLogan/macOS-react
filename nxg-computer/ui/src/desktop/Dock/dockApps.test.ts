@@ -133,7 +133,7 @@ describe("isOverDock", () => {
 });
 
 describe("APP_CATALOG", () => {
-  it("includes core apps", () => {
+  it("includes core and store apps", () => {
     const ids = APP_CATALOG.map((a) => a.id);
     expect(ids).toEqual(
       expect.arrayContaining([
@@ -141,6 +141,15 @@ describe("APP_CATALOG", () => {
         "parametres",
         "calculator",
         "corbeille",
+        "appstore",
+        "notes",
+        "photos",
+        "web",
+        "musique",
+        "terminal",
+        "plans",
+        "calendrier",
+        "mail",
       ])
     );
   });

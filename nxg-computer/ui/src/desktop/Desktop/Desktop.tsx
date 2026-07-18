@@ -83,6 +83,15 @@ export default function Desktop({ children }: any) {
     if (target.closest(".parametres-window")) return;
     if (target.closest(".calculator-window")) return;
     if (target.closest(".corbeille-window")) return;
+    if (target.closest(".appstore-window")) return;
+    if (target.closest(".notes-window")) return;
+    if (target.closest(".photos-window")) return;
+    if (target.closest(".web-window")) return;
+    if (target.closest(".musique-window")) return;
+    if (target.closest(".terminal-window")) return;
+    if (target.closest(".plans-window")) return;
+    if (target.closest(".calendrier-window")) return;
+    if (target.closest(".mail-window")) return;
     if (target.closest(".wallpaper-menu")) return;
     if (target.closest(".context-menu")) return;
 

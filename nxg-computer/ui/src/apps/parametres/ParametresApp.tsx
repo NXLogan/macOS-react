@@ -13,6 +13,7 @@ import {
 import updateSysColor from "../../utils/helpers/updateSysColor";
 import { APP_CATALOG, DockApp } from "../../desktop/Dock/dockApps";
 import { pinAppToDock, unpinAppFromDock } from "../../desktop/Dock/dockPin";
+import { isAppInstalled, loadInstalledIds } from "../registry";
 import clearStorage from "../../utils/helpers/clearStorage";
 import {
   computeStorageBreakdown,
@@ -670,7 +671,9 @@ export default function ParametresApp() {
                     barre d’apps.
                   </p>
                   <div className="ps-app-list">
-                    {APP_CATALOG.map((app) => {
+                    {APP_CATALOG.filter((app) =>
+                      isAppInstalled(app.id, loadInstalledIds())
+                    ).map((app) => {
                       const pinned = state.dockApps.some(
                         (d: DockApp) => d.id === app.id
                       );
