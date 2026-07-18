@@ -1,0 +1,30 @@
+.nxg-power-off {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: #000;
+  color: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 12vh;
+  font-family: inherit;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  -webkit-appearance: none;
+  appearance: none;
+
+  .nxg-power-off-hint {
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  &:hover .nxg-power-off-hint,
+  &:focus-visible .nxg-power-off-hint {
+    opacity: 1;
+  }
+}

@@ -20,10 +20,21 @@ type PinState = {
 };
 
 /** Pin app into dock and remove from desktop — used by Paramètres + desktop drop. */
-export function pinAppToDock(dispatch: Dispatch, state: PinState, app: DockApp) {
+export function pinAppToDock(
+  dispatch: Dispatch,
+  state: PinState,
+  app: DockApp,
+  index?: number
+) {
   const catalog = APP_CATALOG.find((a) => a.id === app.id) || app;
   dispatch({ type: "desktop/REMOVE_ICON", payload: catalog.id });
-  dispatch({ type: "dock/ADD", payload: catalog });
+  if (!state.dockApps.some((a) => a.id === catalog.id)) {
+    dispatch({
+      type: "dock/ADD",
+      payload: catalog,
+      index,
+    });
+  }
 }
 
 /**

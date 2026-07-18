@@ -6,6 +6,7 @@ import checkSettings from "../../utils/helpers/checkSettings";
 import wallpapers from "../../utils/helpers/wallpapers";
 import BootScreen from "../BootScreen/BootScreen";
 import LockScreen from "../LockScreen/LockScreen";
+import PowerOffScreen from "../PowerOffScreen/PowerOffScreen";
 import DesktopMarquee from "../DesktopMarquee/DesktopMarquee";
 import "./Desktop.scss";
 
@@ -128,7 +129,7 @@ export default function Desktop({ children }: any) {
     );
   }, [state.booting]);
 
-  const showDesktop = !state.booting && !state.locked;
+  const showDesktop = !state.booting && !state.locked && !state.poweredOff;
 
   return (
     <div
@@ -154,7 +155,11 @@ export default function Desktop({ children }: any) {
           </motion.div>
         ) : null}
 
-        {!state.booting && state.locked ? (
+        {!state.booting && state.poweredOff ? (
+          <PowerOffScreen key="power-off" />
+        ) : null}
+
+        {!state.booting && state.locked && !state.poweredOff ? (
           <LockScreen key="lock-screen" />
         ) : null}
       </AnimatePresence>

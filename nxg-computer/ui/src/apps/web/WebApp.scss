@@ -14,7 +14,6 @@
 .nxg-drag-root:has(> .web-window) {
   width: min(980px, 90vw);
   height: min(640px, 80vh);
-  z-index: 28;
 }
 
 .web-hit {

@@ -150,7 +150,7 @@ export default function Dock() {
 
     if (droppingToDesktop) {
       const pos = snapDesktopPosition(clientX - 36, clientY - 36);
-      dispatch({ type: "dock/REMOVE", payload: item.id });
+      // ADD_ICON before REMOVE so core apps can leave the dock (reducer checks desktop)
       dispatch({
         type: "desktop/ADD_ICON",
         payload: {
@@ -162,6 +162,7 @@ export default function Dock() {
           y: pos.y,
         } as DesktopIcon,
       });
+      dispatch({ type: "dock/REMOVE", payload: item.id });
     } else {
       dispatch({ type: "dock/REORDER", payload: ordered });
     }

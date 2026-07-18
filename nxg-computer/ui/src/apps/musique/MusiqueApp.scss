@@ -12,7 +12,6 @@
 .nxg-drag-root:has(> .musique-window) {
   width: min(420px, 90vw);
   height: min(480px, 70vh);
-  z-index: 30;
 }
 
 .musique-hit {

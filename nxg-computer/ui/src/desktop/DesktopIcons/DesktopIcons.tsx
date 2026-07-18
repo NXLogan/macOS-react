@@ -5,10 +5,11 @@ import {
   canDockDesktopIcon,
   DesktopIcon,
   dockInsertIndex,
+  isDesktopDropOnDock,
   isOpenableAppId,
-  isOverDock,
   snapDesktopPosition,
 } from "../Dock/dockApps";
+import { pinAppToDock } from "../Dock/dockPin";
 import {
   desktopFoldersNeedUpdate,
   reconcileDesktopFolders,
@@ -66,10 +67,20 @@ export default function DesktopIcons() {
   const [dragEpoch, setDragEpoch] = useState<Record<string, number>>({});
   const dragMoved = useRef(false);
   const dragOrigin = useRef<{ x: number; y: number } | null>(null);
+  const pointer = useRef({ x: 0, y: 0 });
   const iconsRef = useRef(state.desktopIcons);
   iconsRef.current = state.desktopIcons;
   const selectedRef = useRef(selectedIds);
   selectedRef.current = selectedIds;
+
+  useEffect(() => {
+    if (!draggingId) return;
+    const onMove = (e: PointerEvent) => {
+      pointer.current = { x: e.clientX, y: e.clientY };
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => window.removeEventListener("pointermove", onMove);
+  }, [draggingId]);
 
   useEffect(() => {
     const sync = () => {
@@ -186,6 +197,7 @@ export default function DesktopIcons() {
               dragElastic={0.08}
               onPointerDown={(e) => {
                 dragMoved.current = false;
+                pointer.current = { x: e.clientX, y: e.clientY };
                 dragOrigin.current = { x: icon.x, y: icon.y };
                 if (e.shiftKey || e.metaKey || e.ctrlKey) {
                   setSelectedIds((prev) =>
@@ -202,25 +214,30 @@ export default function DesktopIcons() {
                 dragOrigin.current = { x: icon.x, y: icon.y };
                 emitDockHover(false, true);
               }}
-              onDrag={(_, info) => {
+              onDrag={(event) => {
                 dragMoved.current = true;
-                const x = icon.x + info.offset.x + 42;
-                const y = icon.y + info.offset.y + 42;
-                const over = isOverDock(x, y);
-                setOverDock(over);
-                emitDockHover(over && canDockDesktopIcon(icon), true);
-              }}
-              onDragEnd={(event, info) => {
                 const clientX =
                   "clientX" in event
                     ? (event as PointerEvent).clientX
-                    : icon.x + info.offset.x + 36;
+                    : pointer.current.x;
                 const clientY =
                   "clientY" in event
                     ? (event as PointerEvent).clientY
-                    : icon.y + info.offset.y + 36;
-
-                const over = isOverDock(clientX, clientY);
+                    : pointer.current.y;
+                pointer.current = { x: clientX, y: clientY };
+                const el = document.querySelector(
+                  `.desktop-icon[data-icon-id="${icon.id}"]`
+                );
+                const over = isDesktopDropOnDock(clientX, clientY, el);
+                setOverDock(over);
+                emitDockHover(over && canDockDesktopIcon(icon), true);
+              }}
+              onDragEnd={() => {
+                const { x: clientX, y: clientY } = pointer.current;
+                const el = document.querySelector(
+                  `.desktop-icon[data-icon-id="${icon.id}"]`
+                );
+                const over = isDesktopDropOnDock(clientX, clientY, el);
                 const dockable = canDockDesktopIcon(icon);
 
                 setDraggingId(null);
@@ -241,28 +258,23 @@ export default function DesktopIcons() {
                 }
 
                 if (over && dockable) {
-                  const alreadyInDock = state.dockApps.some(
-                    (a: { id: string }) => a.id === icon.id
+                  pinAppToDock(
+                    dispatch,
+                    state,
+                    {
+                      id: icon.id,
+                      name: icon.name,
+                      icon: icon.icon,
+                    },
+                    dockInsertIndex(clientX, clientY)
                   );
-                  dispatch({ type: "desktop/REMOVE_ICON", payload: icon.id });
-                  if (!alreadyInDock) {
-                    dispatch({
-                      type: "dock/ADD",
-                      payload: {
-                        id: icon.id,
-                        name: icon.name,
-                        icon: icon.icon,
-                      },
-                      index: dockInsertIndex(clientX),
-                    });
-                  }
                   setSelectedIds((prev) => prev.filter((id) => id !== icon.id));
                   return;
                 }
 
                 const next = snapDesktopPosition(
-                  icon.x + info.offset.x,
-                  icon.y + info.offset.y
+                  clientX - 42,
+                  clientY - 42
                 );
                 dispatch({
                   type: "desktop/MOVE_ICON",

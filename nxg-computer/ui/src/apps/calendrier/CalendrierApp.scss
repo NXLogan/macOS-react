@@ -12,7 +12,6 @@
 .nxg-drag-root:has(> .calendrier-window) {
   width: min(780px, 90vw);
   height: min(520px, 72vh);
-  z-index: 28;
 }
 
 .cal-hit {

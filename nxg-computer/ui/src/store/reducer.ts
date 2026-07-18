@@ -6,6 +6,10 @@ import {
   PINNED_CORE_APPS,
   sanitizeDockApps,
 } from "../desktop/Dock/dockApps";
+import {
+  bumpWindowOrder,
+  removeFromWindowOrder,
+} from "../desktop/WindowChrome/windowStack";
 
 type AnyAction = {
   type: string;
@@ -139,11 +143,37 @@ const reducer = (state = initialState, action: AnyAction) => {
       return {
         ...state,
         locked: false,
+        poweredOff: false,
       };
     case "auth/LOCK":
       return {
         ...state,
         locked: true,
+      };
+    case "system/SHUTDOWN": {
+      const closedApps: Record<string, boolean> = { ...state.openApps };
+      Object.keys(closedApps).forEach((id) => {
+        closedApps[id] = false;
+      });
+      return {
+        ...state,
+        openApps: closedApps,
+        windowChrome: {},
+        windowOrder: [],
+        onTop: "wallpaper",
+        locked: true,
+        poweredOff: true,
+        section: "none",
+        settings: { ...state.settings, open: false },
+        contextMenu: { ...state.contextMenu, open: false },
+      };
+    }
+    case "system/POWER_ON":
+      return {
+        ...state,
+        poweredOff: false,
+        locked: true,
+        booting: false,
       };
     case "sound/PLAY":
       return {
@@ -264,6 +294,10 @@ const reducer = (state = initialState, action: AnyAction) => {
       return {
         ...state,
         onTop: action.payload,
+        windowOrder: bumpWindowOrder(
+          state.windowOrder || [],
+          action.payload
+        ),
       };
     case "state/LOCAL":
       return {
@@ -299,6 +333,7 @@ const reducer = (state = initialState, action: AnyAction) => {
       return {
         ...state,
         onTop: appId || state.onTop,
+        windowOrder: bumpWindowOrder(state.windowOrder || [], appId),
         openApps: {
           ...state.openApps,
           [appId]: true,
@@ -323,6 +358,10 @@ const reducer = (state = initialState, action: AnyAction) => {
           ...state.openApps,
           [action.payload]: false,
         },
+        windowOrder: removeFromWindowOrder(
+          state.windowOrder || [],
+          action.payload
+        ),
         windowChrome: {
           ...state.windowChrome,
           [action.payload]: { minimized: false, maximized: false },
@@ -363,6 +402,10 @@ const reducer = (state = initialState, action: AnyAction) => {
       return {
         ...state,
         onTop: action.payload,
+        windowOrder: bumpWindowOrder(
+          state.windowOrder || [],
+          action.payload
+        ),
         windowChrome: {
           ...state.windowChrome,
           [action.payload]: {

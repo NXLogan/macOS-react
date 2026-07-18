@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import Draggable, { DraggableEventHandler } from "react-draggable";
 import { store } from "../../App";
+import { windowStackZIndex } from "./windowStack";
 import "./AppWindow.scss";
 
 const CLOSE_MS = 240;
@@ -31,7 +32,7 @@ export default function AppWindowShell({
   windowClassName,
   windowId,
 }: Props) {
-  const [state] = useContext(store);
+  const [state, dispatch] = useContext(store);
   const chrome = state.windowChrome?.[appId] || {
     minimized: false,
     maximized: false,
@@ -107,9 +108,19 @@ export default function AppWindowShell({
     .filter(Boolean)
     .join(" ");
 
-  const onStart: DraggableEventHandler = () => {
-    /* keep focus order natural */
+  const bringToFront = () => {
+    dispatch({ type: "onTop/SET", payload: appId });
   };
+
+  const onStart: DraggableEventHandler = () => {
+    bringToFront();
+  };
+
+  const zIndex = windowStackZIndex(
+    state.windowOrder || [],
+    appId,
+    maximized
+  );
 
   return (
     <Draggable
@@ -121,7 +132,13 @@ export default function AppWindowShell({
       disabled={maximized || minimized || closing}
       onStart={onStart}
     >
-      <div ref={nodeRef} className={frameClass} data-app-window={appId}>
+      <div
+        ref={nodeRef}
+        className={frameClass}
+        data-app-window={appId}
+        style={{ zIndex }}
+        onPointerDownCapture={bringToFront}
+      >
         <div className={paneClass} id={windowId}>
           {children}
         </div>

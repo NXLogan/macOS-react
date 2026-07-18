@@ -27,7 +27,6 @@
 .nxg-drag-root:has(> .corbeille-window) {
   width: min(520px, 78vw);
   height: min(440px, 68vh);
-  z-index: 25;
 }
 
 .corbeille-titlebar {

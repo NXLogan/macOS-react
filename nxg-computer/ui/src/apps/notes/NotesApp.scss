@@ -13,7 +13,6 @@
 .nxg-drag-root:has(> .notes-window) {
   width: min(980px, 88vw);
   height: min(620px, 78vh);
-  z-index: 28;
 }
 
 .notes-hit {

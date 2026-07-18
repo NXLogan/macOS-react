@@ -27,6 +27,9 @@ export default function NuiLifecycle() {
     void fetchNui("computer:ready", {}, { ok: true });
 
     const offOpen = onNuiEvent("computer:open", () => {
+      if (stateRef.current.poweredOff) {
+        dispatch({ type: "system/POWER_ON" });
+      }
       setVisible(true);
     });
 
@@ -44,6 +47,8 @@ export default function NuiLifecycle() {
       if (e.defaultPrevented) return;
 
       const s = stateRef.current;
+
+      if (s.poweredOff) return;
 
       if (s.contextMenu?.open) {
         e.preventDefault();

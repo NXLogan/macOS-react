@@ -9,6 +9,7 @@ import {
 } from "./menuActions";
 import { SPECIAL } from "../../apps/fichiers/fs";
 import { createFolder, emptyTrash } from "../../apps/fichiers/fsApi";
+import { fetchNui, isEnvBrowser } from "../../lib/nui/fetchNui";
 
 type Dispatch = (action: { type: string; payload?: unknown; index?: number; folderId?: string }) => void;
 
@@ -148,13 +149,11 @@ export async function runMenuAction(
       break;
     case "shutdown":
       if (window.confirm("Éteindre NXGos ?")) {
-        Object.keys(state.openApps || {}).forEach((appId) => {
-          if (state.openApps[appId]) {
-            dispatch({ type: "apps/CLOSE", payload: appId });
-          }
-        });
-        dispatch({ type: "auth/LOCK" });
-        toast("Session terminée");
+        dispatch({ type: "system/SHUTDOWN" });
+        toast("Ordinateur éteint");
+        if (!isEnvBrowser()) {
+          void fetchNui("computer:close", {}, { ok: true });
+        }
       }
       break;
 

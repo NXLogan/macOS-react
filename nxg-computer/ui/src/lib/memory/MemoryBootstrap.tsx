@@ -189,14 +189,25 @@ export default function MemoryBootstrap() {
       computerId: string;
       userId: string;
       userName?: string;
-      profile: ComputerProfile;
+      profile?: ComputerProfile | null;
+      empty?: boolean;
     }>("memory:profile", (data) => {
-      if (!data?.computerId || !data?.userId || !data.profile) return;
+      if (!data?.computerId || !data?.userId) return;
+      // nil / empty profile → build defaults (first-time user on this PC)
+      const profile =
+        data.profile && data.profile.version === 1
+          ? data.profile
+          : ensureProfileShape(
+              null,
+              data.computerId,
+              data.userId,
+              data.userName || "NXG User"
+            );
       applyProfile(
         data.computerId,
         data.userId,
         data.userName || "NXG User",
-        data.profile
+        profile
       );
     });
 

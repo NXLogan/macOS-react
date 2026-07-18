@@ -34,7 +34,11 @@ interface storeType {
   failed: boolean;
   booting: boolean;
   locked: boolean;
+  /** True after auto-shutdown / menu shutdown until next open. */
+  poweredOff: boolean;
   onTop: string;
+  /** App ids back→front; last entry is the focused window. */
+  windowOrder: string[];
   soundPlayed: boolean;
   openApps: Record<string, boolean>;
   windowChrome: Record<

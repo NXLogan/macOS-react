@@ -12,7 +12,6 @@
 .nxg-drag-root:has(> .photos-window) {
   width: min(900px, 86vw);
   height: min(580px, 74vh);
-  z-index: 28;
 }
 
 .photos-hit {

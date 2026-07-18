@@ -1,0 +1,1 @@
+-- Reserved for per-app server hooks (mail, terminal, …)

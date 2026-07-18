@@ -2,6 +2,7 @@ import { useContext, useEffect } from "react";
 import { store } from "../../App";
 import { ACCENT_COLORS, AccentId } from "./settingsMeta";
 import updateSysColor from "../../utils/helpers/updateSysColor";
+import { fetchNui, isEnvBrowser } from "../../lib/nui/fetchNui";
 
 function resolveDark(theme: string): boolean {
   if (theme === "light") return false;
@@ -87,7 +88,7 @@ export default function PrefsEffects() {
   }, [prefs?.dockPosition, prefs?.dockIconSize, state.session?.ready]);
 
   useEffect(() => {
-    if (!prefs || state.booting || state.locked) return;
+    if (!prefs || state.booting || state.locked || state.poweredOff) return;
     const minutes = prefs.autoLockMinutes;
     if (!minutes || minutes <= 0) return;
 
@@ -108,7 +109,43 @@ export default function PrefsEffects() {
       events.forEach((ev) => window.removeEventListener(ev, arm));
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [prefs?.autoLockMinutes, state.booting, state.locked, dispatch]);
+  }, [
+    prefs?.autoLockMinutes,
+    state.booting,
+    state.locked,
+    state.poweredOff,
+    dispatch,
+  ]);
+
+  // After sleep (lock) for the same duration → shutdown
+  useEffect(() => {
+    if (
+      !prefs ||
+      state.booting ||
+      !state.locked ||
+      state.poweredOff
+    ) {
+      return;
+    }
+    const minutes = prefs.autoLockMinutes;
+    if (!minutes || minutes <= 0) return;
+
+    const timer = window.setTimeout(() => {
+      dispatch({ type: "system/SHUTDOWN" });
+      if (!isEnvBrowser()) {
+        void fetchNui("computer:close", {}, { ok: true });
+      }
+    }, minutes * 60 * 1000);
+
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    prefs?.autoLockMinutes,
+    state.booting,
+    state.locked,
+    state.poweredOff,
+    dispatch,
+  ]);
 
   return null;
 }

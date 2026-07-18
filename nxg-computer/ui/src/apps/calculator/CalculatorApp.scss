@@ -21,7 +21,6 @@
 .nxg-drag-root:has(> .calculator-window) {
   width: 248px;
   height: 456px;
-  z-index: 35;
 }
 
 .nxg-drag-root.is-maximized > .calculator-window {
@@ -39,6 +38,7 @@
   height: 100%;
   background: #1c1c1e;
   box-sizing: border-box;
+  outline: none;
 }
 
 .calc-titlebar {

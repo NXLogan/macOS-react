@@ -12,7 +12,6 @@
 .nxg-drag-root:has(> .appstore-window) {
   width: min(860px, 90vw);
   height: min(600px, 78vh);
-  z-index: 30;
 }
 
 .store-hit {

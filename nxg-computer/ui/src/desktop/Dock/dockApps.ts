@@ -192,17 +192,44 @@ export function saveDockOrder(apps: DockApp[]) {
   );
 }
 
-export function isOverDock(clientX: number, clientY: number) {
-  const dock = document.querySelector(".dock");
+export function isOverDock(
+  clientX: number,
+  clientY: number,
+  loose = false
+) {
+  const dock =
+    document.querySelector(".dock") ||
+    document.querySelector(".dock-shell");
   if (!dock) return false;
   const r = dock.getBoundingClientRect();
-  // Strict hitbox — only the real dock bar (not the whole bottom strip / corners)
-  const pad = 10;
+  // Loose pad when dropping from the desktop (easier to hit the bar)
+  const pad = loose ? 40 : 10;
   return (
     clientX >= r.left - pad &&
     clientX <= r.right + pad &&
     clientY >= r.top - pad &&
     clientY <= r.bottom + pad
+  );
+}
+
+/** True if pointer or icon rect overlaps the dock (desktop → barre). */
+export function isDesktopDropOnDock(
+  clientX: number,
+  clientY: number,
+  iconEl?: Element | null
+) {
+  if (isOverDock(clientX, clientY, true)) return true;
+  if (!iconEl) return false;
+  const dock = document.querySelector(".dock");
+  if (!dock) return false;
+  const a = iconEl.getBoundingClientRect();
+  const b = dock.getBoundingClientRect();
+  const pad = 28;
+  return !(
+    a.right < b.left - pad ||
+    a.left > b.right + pad ||
+    a.bottom < b.top - pad ||
+    a.top > b.bottom + pad
   );
 }
 
@@ -215,14 +242,24 @@ export function canDockDesktopIcon(icon: {
   return APP_CATALOG.some((a) => a.id === icon.id);
 }
 
-/** Index at which to insert an app based on pointer X over the dock. */
-export function dockInsertIndex(clientX: number): number {
+/** Index at which to insert an app based on pointer over the dock. */
+export function dockInsertIndex(clientX: number, clientY?: number): number {
   const items = Array.from(document.querySelectorAll(".dock .dock-item"));
   if (!items.length) return 0;
+  const shell = document.querySelector(".dock-shell");
+  const side =
+    shell?.classList.contains("dock-pos-left") ||
+    shell?.classList.contains("dock-pos-right");
+
   for (let i = 0; i < items.length; i++) {
     const r = items[i].getBoundingClientRect();
-    const mid = r.left + r.width / 2;
-    if (clientX < mid) return i;
+    if (side && typeof clientY === "number") {
+      const mid = r.top + r.height / 2;
+      if (clientY < mid) return i;
+    } else {
+      const mid = r.left + r.width / 2;
+      if (clientX < mid) return i;
+    }
   }
   return items.length;
 }

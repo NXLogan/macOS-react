@@ -12,7 +12,6 @@
 .nxg-drag-root:has(> .mail-window) {
   width: min(960px, 90vw);
   height: min(600px, 76vh);
-  z-index: 28;
 }
 
 .mail-hit {

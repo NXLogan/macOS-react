@@ -789,7 +789,10 @@ export default function ParametresApp() {
                 </section>
                 <h2>Sécurité</h2>
                 <section className="ps-card">
-                  <Row label="Verrouillage auto" hint="Après inactivité">
+                  <Row
+                    label="Veille puis extinction"
+                    hint="Verrouille après inactivité, puis éteint après la même durée"
+                  >
                     <select
                       className="ps-select"
                       value={prefs.autoLockMinutes}

@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useReducer } from "react";
+import React, { useCallback, useContext, useEffect, useReducer, useRef } from "react";
 import { store } from "../../App";
 import TrafficLights from "../../desktop/WindowChrome/TrafficLights";
 import AppWindowShell from "../../desktop/WindowChrome/AppWindowShell";
@@ -58,35 +58,97 @@ export default function CalculatorApp() {
   const open = Boolean(appState.openApps?.calculator);
   const minimized = Boolean(appState.windowChrome?.calculator?.minimized);
   const [calc, dispatch] = useReducer(reducer, undefined, createCalcState);
+  const onTopRef = useRef(appState.onTop);
+  onTopRef.current = appState.onTop;
+  const hitRef = useRef<HTMLDivElement>(null);
 
   const focusCalc = useCallback(() => {
     dispatchApp({ type: "onTop/SET", payload: "calculator" });
+    hitRef.current?.focus({ preventScroll: true });
   }, [dispatchApp]);
 
   useEffect(() => {
+    if (open && !minimized) {
+      // Ensure keyboard works as soon as the window is shown
+      dispatchApp({ type: "onTop/SET", payload: "calculator" });
+      window.setTimeout(() => hitRef.current?.focus({ preventScroll: true }), 40);
+    }
+  }, [open, minimized, dispatchApp]);
+
+  useEffect(() => {
     if (!open || minimized) return;
+
+    const digitFromEvent = (e: KeyboardEvent): string | null => {
+      if (/^Digit[0-9]$/.test(e.code) || /^Numpad[0-9]$/.test(e.code)) {
+        return e.code.slice(-1);
+      }
+      if (e.key >= "0" && e.key <= "9") return e.key;
+      return null;
+    };
+
     const onKey = (e: KeyboardEvent) => {
-      if (appState.onTop !== "calculator") return;
-      const k = e.key;
-      if (k >= "0" && k <= "9") {
+      const target = e.target as HTMLElement | null;
+      if (
+        target?.closest?.(
+          "input, textarea, select, [contenteditable='true']"
+        )
+      ) {
+        return;
+      }
+
+      const top = onTopRef.current;
+      const inCalc = Boolean(
+        target?.closest?.(
+          "[data-app-window='calculator'], .calculator-window, .calculator-hit"
+        )
+      );
+      // Ignore only when another app is clearly frontmost and focus isn't in calc
+      if (
+        top &&
+        top !== "calculator" &&
+        top !== "wallpaper" &&
+        !inCalc
+      ) {
+        return;
+      }
+
+      const digit = digitFromEvent(e);
+      if (digit) {
         e.preventDefault();
-        dispatch({ type: "digit", d: k });
-      } else if (k === "." || k === ",") {
+        dispatch({ type: "digit", d: digit });
+        return;
+      }
+
+      const k = e.key;
+      const code = e.code;
+
+      if (
+        k === "." ||
+        k === "," ||
+        code === "NumpadDecimal" ||
+        code === "Period" ||
+        code === "Comma"
+      ) {
         e.preventDefault();
         dispatch({ type: "dot" });
-      } else if (k === "+") {
+      } else if (k === "+" || code === "NumpadAdd") {
         e.preventDefault();
         dispatch({ type: "op", op: "+" });
-      } else if (k === "-") {
+      } else if (k === "-" || code === "NumpadSubtract" || code === "Minus") {
         e.preventDefault();
         dispatch({ type: "op", op: "-" });
-      } else if (k === "*" || k === "x" || k === "X") {
+      } else if (
+        k === "*" ||
+        k === "x" ||
+        k === "X" ||
+        code === "NumpadMultiply"
+      ) {
         e.preventDefault();
         dispatch({ type: "op", op: "×" });
-      } else if (k === "/") {
+      } else if (k === "/" || code === "NumpadDivide" || code === "Slash") {
         e.preventDefault();
         dispatch({ type: "op", op: "÷" });
-      } else if (k === "Enter" || k === "=") {
+      } else if (k === "Enter" || k === "=" || code === "NumpadEnter") {
         e.preventDefault();
         dispatch({ type: "equals" });
       } else if (k === "Escape") {
@@ -101,9 +163,10 @@ export default function CalculatorApp() {
         dispatch({ type: "percent" });
       }
     };
+
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
-  }, [open, minimized, appState.onTop]);
+  }, [open, minimized]);
 
   if (!open) return null;
 
@@ -134,6 +197,7 @@ export default function CalculatorApp() {
       type="button"
       className={`calc-btn calc-${kind}`}
       onClick={press(action)}
+      onMouseDown={() => focusCalc()}
     >
       {label}
     </button>
@@ -147,7 +211,15 @@ export default function CalculatorApp() {
       windowClassName="calculator-window"
       windowId="calculator-window"
     >
-      <div className="calculator-hit" onMouseDown={() => focusCalc()}>
+      <div
+        ref={hitRef}
+        className="calculator-hit"
+        tabIndex={0}
+        onMouseDown={() => focusCalc()}
+        onFocus={() =>
+          dispatchApp({ type: "onTop/SET", payload: "calculator" })
+        }
+      >
         <header className="calc-titlebar">
           <TrafficLights appId="calculator" onClose={closeApp} />
         </header>
