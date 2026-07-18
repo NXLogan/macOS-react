@@ -47,6 +47,7 @@ export default function Desktop({ children }: any) {
     if (target.closest(".dock")) return;
     if (target.closest(".nav-bar")) return;
     if (target.closest(".fichiers-window")) return;
+    if (target.closest(".parametres-window")) return;
     if (target.closest(".wallpaper-menu")) return;
     if (target.closest(".context-menu")) return;
 

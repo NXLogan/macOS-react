@@ -568,7 +568,9 @@ export default function ParametresApp() {
                   </p>
                   <div className="ps-app-list">
                     {APP_CATALOG.map((app) => {
-                      const pinned = state.dockApps.some((d) => d.id === app.id);
+                      const pinned = state.dockApps.some(
+                        (d: DockApp) => d.id === app.id
+                      );
                       return (
                         <div key={app.id} className="ps-app-row">
                           <img

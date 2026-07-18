@@ -1,6 +1,6 @@
 import { useContext, useEffect } from "react";
 import { store } from "../../App";
-import { ACCENT_COLORS } from "../../apps/parametres/settingsMeta";
+import { ACCENT_COLORS, AccentId } from "../../apps/parametres/settingsMeta";
 import updateSysColor from "../../utils/helpers/updateSysColor";
 
 /** Applies theme, accent, dock layout, auto-lock from prefs. */
@@ -29,10 +29,11 @@ export default function PrefsEffects() {
       page.dataset.theme = dark || prefs.theme === "dark" ? "dark" : "light";
     }
 
-    const accent = ACCENT_COLORS[prefs.accent] || ACCENT_COLORS.blue;
+    const accentId = (prefs.accent || "blue") as AccentId;
+    const accent = ACCENT_COLORS[accentId] || ACCENT_COLORS.blue;
     root.style.setProperty("--nxg-accent", accent);
     root.style.setProperty("--user-color", accent);
-    updateSysColor(prefs.accent);
+    updateSysColor(accentId);
   }, [prefs?.theme, prefs?.accent]);
 
   useEffect(() => {
